@@ -675,7 +675,7 @@ function loadAllSettings() {
   // Load all saved settings or defaults
   autoscroll.checked = loadSetting('autoscroll', true);
   showTimestamp.checked = loadSetting('timestamp', false);
-  darkMode.checked = loadSetting('darkmode', false);
+  darkMode.checked = loadSetting('darkmode', true);
   knownOnly.checked = loadSetting('knownonly', true);
 }
 
