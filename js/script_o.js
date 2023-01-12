@@ -75,12 +75,6 @@ const boards = {
     hasSwitch: false,
     buttons: 1,
   },
-  GB_LoRa: {
-    colorOrder: 'GRB',
-    neopixels: 0,
-    hasSwitch: false,
-    buttons: 1,
-  },
   unknown: {
     colorOrder: 'GRB',
     neopixels: 1,
@@ -137,8 +131,8 @@ let panels = {
     },
   },
   temperature: {
-    serviceId: '1430-0000',
-    characteristicId: '1430-0001',
+    serviceId: '0100',
+    characteristicId: '0101',
     panelType: "graph",
     structure: ['Float32'],
     data: {temperature:[]},
@@ -148,16 +142,16 @@ let panels = {
     },
   },
   light: {
-    serviceId: '1431-0000',
-    characteristicId: '1431-0001',
+    serviceId: '0300',
+    characteristicId: '0301',
     panelType: "graph",
     structure: ['Float32'],
     data: {light:[]},
     properties: ['notify'],
   },
   accelerometer: {
-    serviceId: '0010-0000',
-    characteristicId: '0010-0001',
+    serviceId: '0200',
+    characteristicId: '0201',
     panelType: "graph",
     structure: ['Float32', 'Float32', 'Float32'],
     data: {x:[], y:[], z:[]},
@@ -168,8 +162,8 @@ let panels = {
     measurementPeriod: 500,
   },
   gyroscope: {
-    serviceId: '0012-0000',
-    characteristicId: '0012-0001',
+    serviceId: '0400',
+    characteristicId: '0401',
     panelType: "graph",
     structure: ['Float32', 'Float32', 'Float32'],
     data: {x:[], y:[], z:[]},
@@ -180,8 +174,8 @@ let panels = {
     measurementPeriod: 500,
   },
   magnetometer: {
-    serviceId: '0014-0000',
-    characteristicId: '0014-0001',
+    serviceId: '0500',
+    characteristicId: '0501',
     panelType: "graph",
     structure: ['Float32', 'Float32', 'Float32'],
     data: {x:[], y:[], z:[]},
@@ -192,8 +186,8 @@ let panels = {
     measurementPeriod: 500,
   },
   buttons: {
-    serviceId: '001a-0000',
-    characteristicId: '001a-0001',
+    serviceId: '0600',
+    characteristicId: '0601',
     panelType: "custom",
     structure: ['Uint32'],
     data: {buttonState:[]},
@@ -224,8 +218,8 @@ let panels = {
     },
   },
   switch: {
-    serviceId: '1432-0000',
-    characteristicId: '1432-0001',
+    serviceId: '0600',
+    characteristicId: '0601',
     panelType: "custom",
     structure: ['Uint32'],
     data: {buttonState:[]},
@@ -244,8 +238,8 @@ let panels = {
     },
   },
   humidity: {
-    serviceId: '1433-0000',
-    characteristicId: '1433-0001',
+    serviceId: '0700',
+    characteristicId: '0701',
     panelType: "graph",
     structure: ['Float32'],
     data: {humidity:[]},
@@ -255,8 +249,8 @@ let panels = {
     },
   },
   barometric_pressure: {
-    serviceId: '0016-0000',
-    characteristicId: '0016-0001',
+    serviceId: '0800',
+    characteristicId: '0801',
     panelType: "graph",
     structure: ['Float32'],
     data: {barometric:[]},
@@ -266,8 +260,8 @@ let panels = {
     },
   },
   tone: {
-    serviceId: '0018-0000',
-    characteristicId: '0018-0001',
+    serviceId: '0c00',
+    characteristicId: '0c01',
     panelType: "custom",
     create: function(panelId) {
       let panelTemplate = loadPanelTemplate(panelId, 'play-button');
@@ -282,8 +276,8 @@ let panels = {
     properties: ['write'],
   },
   neopixel: {
-    serviceId: '1434-0000',
-    characteristicId: '1434-0001',
+    serviceId: '0900',
+    characteristicId: '0903',
     panelType: "color",
     structure: ['Uint16', 'Uint8', 'Uint8[]'],
     data: {R:[],G:[],B:[]},
@@ -291,8 +285,8 @@ let panels = {
   },
   'model3d': {
     title: '3D Model',
-    serviceId: '1435-0000',
-    characteristicId: '1435-0001',
+    serviceId: '0d00',
+    characteristicId: '0d01',
     panelType: "model3d",
     structure: ['Float32', 'Float32', 'Float32', 'Float32'],
     data: {w:[],x:[], y:[], z:[]},
@@ -359,6 +353,7 @@ async function connect() {
     let services = [];
     for (let panelId of Object.keys(panels)) {
       services.push(getFullId(panels[panelId].serviceId));
+      logMsg("debugg " + getFullId(panels[panelId].serviceId));
     }
     if (knownOnly.checked) {
       let knownBoards = Object.keys(boards);
@@ -392,7 +387,7 @@ async function connect() {
     // Create the panels only if service available
     for (let panelId of Object.keys(panels)) {
       if (panels[panelId].condition == undefined || panels[panelId].condition()) {
-        if (getFullId(panels[panelId].serviceId).substr(0, 8) == "9b489064") {
+        if (getFullId(panels[panelId].serviceId).substr(0, 4) == "adaf") {
           for (const service of availableServices) {
             if (getFullId(panels[panelId].serviceId) == service.uuid) {
               createPanel(panelId);
@@ -508,8 +503,8 @@ async function disconnect() {
 }
 
 function getFullId(shortId) {
-  if (shortId.length == 9) {
-    return '9b489064-' + shortId + '-a1eb-0242ac120002';
+  if (shortId.length == 4) {
+    return 'adaf' + shortId + '-c332-42a8-93bd-25e905756cb8';
   }
   return shortId;
 }
@@ -681,7 +676,7 @@ function loadAllSettings() {
   // Load all saved settings or defaults
   autoscroll.checked = loadSetting('autoscroll', true);
   showTimestamp.checked = loadSetting('timestamp', false);
-  darkMode.checked = loadSetting('darkmode', true);
+  darkMode.checked = loadSetting('darkmode', false);
   knownOnly.checked = loadSetting('knownonly', true);
 }
 
