@@ -75,6 +75,12 @@ const boards = {
     hasSwitch: false,
     buttons: 1,
   },
+  GB_LoRa: {
+    colorOrder: 'GRB',
+    neopixels: 0,
+    hasSwitch: false,
+    buttons: 1,
+  },
   unknown: {
     colorOrder: 'GRB',
     neopixels: 1,
