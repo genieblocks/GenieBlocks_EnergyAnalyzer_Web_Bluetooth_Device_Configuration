@@ -137,8 +137,8 @@ let panels = {
     },
   },
   temperature: {
-    serviceId: '0100',
-    characteristicId: '0101',
+    serviceId: '1430-0000',
+    characteristicId: '1430-0001',
     panelType: "graph",
     structure: ['Float32'],
     data: {temperature:[]},
@@ -148,16 +148,16 @@ let panels = {
     },
   },
   light: {
-    serviceId: '0300',
-    characteristicId: '0301',
+    serviceId: '1431-0000',
+    characteristicId: '1431-0001',
     panelType: "graph",
     structure: ['Float32'],
     data: {light:[]},
     properties: ['notify'],
   },
   accelerometer: {
-    serviceId: '0200',
-    characteristicId: '0201',
+    serviceId: '0010-0000',
+    characteristicId: '0010-0001',
     panelType: "graph",
     structure: ['Float32', 'Float32', 'Float32'],
     data: {x:[], y:[], z:[]},
@@ -168,8 +168,8 @@ let panels = {
     measurementPeriod: 500,
   },
   gyroscope: {
-    serviceId: '0400',
-    characteristicId: '0401',
+    serviceId: '0012-0000',
+    characteristicId: '0012-0001',
     panelType: "graph",
     structure: ['Float32', 'Float32', 'Float32'],
     data: {x:[], y:[], z:[]},
@@ -180,8 +180,8 @@ let panels = {
     measurementPeriod: 500,
   },
   magnetometer: {
-    serviceId: '0500',
-    characteristicId: '0501',
+    serviceId: '0014-0000',
+    characteristicId: '0014-0001',
     panelType: "graph",
     structure: ['Float32', 'Float32', 'Float32'],
     data: {x:[], y:[], z:[]},
@@ -192,8 +192,8 @@ let panels = {
     measurementPeriod: 500,
   },
   buttons: {
-    serviceId: '0600',
-    characteristicId: '0601',
+    serviceId: '001a-0000',
+    characteristicId: '001a-0001',
     panelType: "custom",
     structure: ['Uint32'],
     data: {buttonState:[]},
@@ -224,8 +224,8 @@ let panels = {
     },
   },
   switch: {
-    serviceId: '0600',
-    characteristicId: '0601',
+    serviceId: '1432-0000',
+    characteristicId: '1432-0001',
     panelType: "custom",
     structure: ['Uint32'],
     data: {buttonState:[]},
@@ -244,8 +244,8 @@ let panels = {
     },
   },
   humidity: {
-    serviceId: '0700',
-    characteristicId: '0701',
+    serviceId: '1433-0000',
+    characteristicId: '1433-0001',
     panelType: "graph",
     structure: ['Float32'],
     data: {humidity:[]},
@@ -255,8 +255,8 @@ let panels = {
     },
   },
   barometric_pressure: {
-    serviceId: '0800',
-    characteristicId: '0801',
+    serviceId: '0016-0000',
+    characteristicId: '0016-0001',
     panelType: "graph",
     structure: ['Float32'],
     data: {barometric:[]},
@@ -266,8 +266,8 @@ let panels = {
     },
   },
   tone: {
-    serviceId: '0c00',
-    characteristicId: '0c01',
+    serviceId: '0018-0000',
+    characteristicId: '0018-0001',
     panelType: "custom",
     create: function(panelId) {
       let panelTemplate = loadPanelTemplate(panelId, 'play-button');
@@ -282,8 +282,8 @@ let panels = {
     properties: ['write'],
   },
   neopixel: {
-    serviceId: '0900',
-    characteristicId: '0903',
+    serviceId: '1434-0000',
+    characteristicId: '1434-0001',
     panelType: "color",
     structure: ['Uint16', 'Uint8', 'Uint8[]'],
     data: {R:[],G:[],B:[]},
@@ -291,8 +291,8 @@ let panels = {
   },
   'model3d': {
     title: '3D Model',
-    serviceId: '0d00',
-    characteristicId: '0d01',
+    serviceId: '1435-0000',
+    characteristicId: '1435-0001',
     panelType: "model3d",
     structure: ['Float32', 'Float32', 'Float32', 'Float32'],
     data: {w:[],x:[], y:[], z:[]},
@@ -392,7 +392,7 @@ async function connect() {
     // Create the panels only if service available
     for (let panelId of Object.keys(panels)) {
       if (panels[panelId].condition == undefined || panels[panelId].condition()) {
-        if (getFullId(panels[panelId].serviceId).substr(0, 4) == "adaf") {
+        if (getFullId(panels[panelId].serviceId).substr(0, 8) == "gb489064") {
           for (const service of availableServices) {
             if (getFullId(panels[panelId].serviceId) == service.uuid) {
               createPanel(panelId);
@@ -508,8 +508,8 @@ async function disconnect() {
 }
 
 function getFullId(shortId) {
-  if (shortId.length == 4) {
-    return 'adaf' + shortId + '-c332-42a8-93bd-25e905756cb8';
+  if (shortId.length == 9) {
+    return 'gb489064-' + shortId + '-a1eb-0242ac120002';
   }
   return shortId;
 }
