@@ -144,7 +144,8 @@ let panels = {
     data: {temperature:[]},
     properties: ['notify'],
     textFormat: function(value) {
-      return numeral((9 / 5 * value) + 32).format('0.00') + '&deg; F';
+      // return numeral((9 / 5 * value) + 32).format('0.00') + '&deg; F';
+      return numeral(value).format('0.00') + '&deg; C';
     },
   },
   light: {
