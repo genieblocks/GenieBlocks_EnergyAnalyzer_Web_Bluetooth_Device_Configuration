@@ -266,6 +266,17 @@ let panels = {
       return numeral(value).format('0.00') + ' hPA';
     },
   },
+  hall_effect: {
+    serviceId: '0020-0000',
+    characteristicId: '0020-0001',
+    panelType: "graph",
+    structure: ['Float32'],
+    data: {halleffect:[]},
+    properties: ['notify'],
+    textFormat: function(value) {
+      return numeral(value).format('0.00') + ' &micro;T';
+    },
+  },
   tone: {
     serviceId: '0018-0000',
     characteristicId: '0018-0001',
