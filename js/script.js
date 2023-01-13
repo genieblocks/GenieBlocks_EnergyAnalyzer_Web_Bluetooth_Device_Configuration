@@ -166,7 +166,7 @@ let panels = {
     textFormat: function(value) {
       return numeral(value).format('0.00');
     },
-    measurementPeriod: 500,
+    // measurementPeriod: 500,
   },
   gyroscope: {
     serviceId: '0012-0000',
@@ -178,7 +178,7 @@ let panels = {
     textFormat: function(value) {
       return numeral(value).format('0.00');
     },
-    measurementPeriod: 500,
+    // measurementPeriod: 500,
   },
   magnetometer: {
     serviceId: '0014-0000',
@@ -190,7 +190,7 @@ let panels = {
     textFormat: function(value) {
       return numeral(value).format('0.00') + ' &micro;T';
     },
-    measurementPeriod: 500,
+    // measurementPeriod: 500,
   },
   buttons: {
     serviceId: '001a-0000',
@@ -302,7 +302,7 @@ let panels = {
     textFormat: function(value) {
       return numeral(value).format('0.00') + ' rad';
     },
-    measurementPeriod: 200,
+    // measurementPeriod: 200,
   },
 };
 
