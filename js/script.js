@@ -136,6 +136,17 @@ let panels = {
       }
     },
   },
+  ota_status: {
+    serviceId: '0006-0000',
+    characteristicId: '0006-0004',
+    panelType: "text",
+    structure: ['Uint8'],
+    data: {ota_status:[]},
+    properties: ['notify'],
+    textFormat: function(value) {
+      return 'Value: ' + value;
+    },
+  },
   temperature: {
     serviceId: '1430-0000',
     characteristicId: '1430-0001',
