@@ -144,28 +144,51 @@ let panels = {
     data: {ota_status:[]},
     properties: ['notify'],
     textFormat: function(value) {
-      return 'Value: ' + value;
+      return 'Available<br><br> Value: ' + value;
     },
   },
-  temperature: {
-    serviceId: '1430-0000',
-    characteristicId: '1430-0001',
+  buttons: {
+    serviceId: '001a-0000',
+    characteristicId: '001a-0001',
+    panelType: "custom",
+    structure: ['Uint32'],
+    data: {buttonState:[]},
+    properties: ['notify'],
+    create: function(panelId) {
+      let panelTemplate = loadPanelTemplate(panelId, 'onboard-buttons');
+      for (let i = 0; i < currentBoard.buttons; i++) {
+        let buttonTemplate = document.querySelector("#templates > .roundbutton").cloneNode(true);
+        buttonTemplate.id = "button_" + (i + 1);
+        buttonTemplate.querySelector(".text").innerHTML = String.fromCharCode(65 + i);
+        panelTemplate.querySelector(".content").appendChild(buttonTemplate);
+      }
+    },
+    update: function(panelId) {
+      let panelElement = document.querySelector("#dashboard > #" + panelId);
+      buttonState = panels[panelId].data.buttonState.pop();
+      if (panels.switch.condition()) {
+        panels.switch.update('switch'); // Update the switch because we aren't doing 2 notifys
+      }
+      // Match the buttons to the values
+      for (let i = 1; i <= currentBoard.buttons; i++) {
+        if (buttonState & (1 << i)) {
+          panelElement.querySelector("#button_" + i + " .roundbtn").classList.add("pressed");
+        } else {
+          panelElement.querySelector("#button_" + i + " .roundbtn").classList.remove("pressed");
+        }
+      }
+    },
+  },
+  hall_effect: {
+    serviceId: '0020-0000',
+    characteristicId: '0020-0001',
     panelType: "graph",
     structure: ['Float32'],
-    data: {temperature:[]},
+    data: {halleffect:[]},
     properties: ['notify'],
     textFormat: function(value) {
-      // return numeral((9 / 5 * value) + 32).format('0.00') + '&deg; F';
-      return numeral(value).format('0.00') + '&deg; C';
+      return numeral(value).format('0.00') + ' &micro;T';
     },
-  },
-  light: {
-    serviceId: '1431-0000',
-    characteristicId: '1431-0001',
-    panelType: "graph",
-    structure: ['Float32'],
-    data: {light:[]},
-    properties: ['notify'],
   },
   accelerometer: {
     serviceId: '0010-0000',
@@ -202,38 +225,6 @@ let panels = {
       return numeral(value).format('0.00') + ' &micro;T';
     },
     // measurementPeriod: 500,
-  },
-  buttons: {
-    serviceId: '001a-0000',
-    characteristicId: '001a-0001',
-    panelType: "custom",
-    structure: ['Uint32'],
-    data: {buttonState:[]},
-    properties: ['notify'],
-    create: function(panelId) {
-      let panelTemplate = loadPanelTemplate(panelId, 'onboard-buttons');
-      for (let i = 0; i < currentBoard.buttons; i++) {
-        let buttonTemplate = document.querySelector("#templates > .roundbutton").cloneNode(true);
-        buttonTemplate.id = "button_" + (i + 1);
-        buttonTemplate.querySelector(".text").innerHTML = String.fromCharCode(65 + i);
-        panelTemplate.querySelector(".content").appendChild(buttonTemplate);
-      }
-    },
-    update: function(panelId) {
-      let panelElement = document.querySelector("#dashboard > #" + panelId);
-      buttonState = panels[panelId].data.buttonState.pop();
-      if (panels.switch.condition()) {
-        panels.switch.update('switch'); // Update the switch because we aren't doing 2 notifys
-      }
-      // Match the buttons to the values
-      for (let i = 1; i <= currentBoard.buttons; i++) {
-        if (buttonState & (1 << i)) {
-          panelElement.querySelector("#button_" + i + " .roundbtn").classList.add("pressed");
-        } else {
-          panelElement.querySelector("#button_" + i + " .roundbtn").classList.remove("pressed");
-        }
-      }
-    },
   },
   switch: {
     serviceId: '1432-0000',
@@ -277,17 +268,6 @@ let panels = {
       return numeral(value).format('0.00') + ' hPA';
     },
   },
-  hall_effect: {
-    serviceId: '0020-0000',
-    characteristicId: '0020-0001',
-    panelType: "graph",
-    structure: ['Float32'],
-    data: {halleffect:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.00') + ' &micro;T';
-    },
-  },
   tone: {
     serviceId: '0018-0000',
     characteristicId: '0018-0001',
@@ -303,6 +283,26 @@ let panels = {
     },
     structure: ['Uint16', 'Uint32'],
     properties: ['write'],
+  },
+  temperature: {
+    serviceId: '1430-0000',
+    characteristicId: '1430-0001',
+    panelType: "graph",
+    structure: ['Float32'],
+    data: {temperature:[]},
+    properties: ['notify'],
+    textFormat: function(value) {
+      // return numeral((9 / 5 * value) + 32).format('0.00') + '&deg; F';
+      return numeral(value).format('0.00') + '&deg; C';
+    },
+  },
+  light: {
+    serviceId: '1431-0000',
+    characteristicId: '1431-0001',
+    panelType: "graph",
+    structure: ['Float32'],
+    data: {light:[]},
+    properties: ['notify'],
   },
   neopixel: {
     serviceId: '1434-0000',
