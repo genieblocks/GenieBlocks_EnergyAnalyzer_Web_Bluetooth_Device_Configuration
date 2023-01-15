@@ -189,6 +189,7 @@ let panels = {
     textFormat: function(value) {
       return numeral(value).format('0.00') + ' &micro;T';
     },
+    // measurementPeriod: 200,
   },
   accelerometer: {
     serviceId: '0010-0000',
