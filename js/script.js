@@ -90,6 +90,65 @@ const boards = {
 }
 
 let panels = {
+  accelerometer: {
+    serviceId: '0010-0000',
+    characteristicId: '0010-0001',
+    panelType: "graph",
+    structure: ['Float32', 'Float32', 'Float32'],
+    data: {x:[], y:[], z:[]},
+    properties: ['notify'],
+    textFormat: function(value) {
+      return numeral(value).format('0.00');
+    },
+    // measurementPeriod: 500,
+  },
+  gyroscope: {
+    serviceId: '0012-0000',
+    characteristicId: '0012-0001',
+    panelType: "graph",
+    structure: ['Float32', 'Float32', 'Float32'],
+    data: {x:[], y:[], z:[]},
+    properties: ['notify'],
+    textFormat: function(value) {
+      return numeral(value).format('0.00');
+    },
+    // measurementPeriod: 500,
+  },
+  magnetometer: {
+    serviceId: '0014-0000',
+    characteristicId: '0014-0001',
+    panelType: "graph",
+    structure: ['Float32', 'Float32', 'Float32'],
+    data: {x:[], y:[], z:[]},
+    properties: ['notify'],
+    textFormat: function(value) {
+      return numeral(value).format('0.00') + ' &micro;T';
+    },
+    // measurementPeriod: 500,
+  },
+  barometric_pressure: {
+    serviceId: '0016-0000',
+    characteristicId: '0016-0001',
+    panelType: "graph",
+    structure: ['Float32'],
+    data: {barometric:[]},
+    properties: ['notify'],
+    textFormat: function(value) {
+      return numeral(value).format('0.00') + ' hPA';
+    },
+  },
+  temperature: {
+    serviceId: '1430-0000',
+    characteristicId: '1430-0001',
+    panelType: "graph",
+    structure: ['Float32'],
+    data: {temperature:[]},
+    properties: ['notify'],
+    textFormat: function(value) {
+      // return numeral((9 / 5 * value) + 32).format('0.00') + '&deg; F';
+      return numeral(value).format('0.00') + '&deg; C';
+    },
+  },
   battery: {
     title: 'Battery Level',
     serviceId: 'battery_service',
@@ -191,42 +250,6 @@ let panels = {
     },
     // measurementPeriod: 200,
   },
-  accelerometer: {
-    serviceId: '0010-0000',
-    characteristicId: '0010-0001',
-    panelType: "graph",
-    structure: ['Float32', 'Float32', 'Float32'],
-    data: {x:[], y:[], z:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.00');
-    },
-    // measurementPeriod: 500,
-  },
-  gyroscope: {
-    serviceId: '0012-0000',
-    characteristicId: '0012-0001',
-    panelType: "graph",
-    structure: ['Float32', 'Float32', 'Float32'],
-    data: {x:[], y:[], z:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.00');
-    },
-    // measurementPeriod: 500,
-  },
-  magnetometer: {
-    serviceId: '0014-0000',
-    characteristicId: '0014-0001',
-    panelType: "graph",
-    structure: ['Float32', 'Float32', 'Float32'],
-    data: {x:[], y:[], z:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.00') + ' &micro;T';
-    },
-    // measurementPeriod: 500,
-  },
   switch: {
     serviceId: '1432-0000',
     characteristicId: '1432-0001',
@@ -258,17 +281,6 @@ let panels = {
       return numeral(value).format('0.0') + '%';
     },
   },
-  barometric_pressure: {
-    serviceId: '0016-0000',
-    characteristicId: '0016-0001',
-    panelType: "graph",
-    structure: ['Float32'],
-    data: {barometric:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.00') + ' hPA';
-    },
-  },
   tone: {
     serviceId: '0018-0000',
     characteristicId: '0018-0001',
@@ -284,18 +296,6 @@ let panels = {
     },
     structure: ['Uint16', 'Uint32'],
     properties: ['write'],
-  },
-  temperature: {
-    serviceId: '1430-0000',
-    characteristicId: '1430-0001',
-    panelType: "graph",
-    structure: ['Float32'],
-    data: {temperature:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      // return numeral((9 / 5 * value) + 32).format('0.00') + '&deg; F';
-      return numeral(value).format('0.00') + '&deg; C';
-    },
   },
   light: {
     serviceId: '1431-0000',
