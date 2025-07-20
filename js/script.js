@@ -25,8 +25,6 @@ const butClear = document.getElementById('butClear');
 const autoscroll = document.getElementById('autoscroll');
 const showTimestamp = document.getElementById('showTimestamp');
 const lightSS = document.getElementById('light');
-const darkSS = document.getElementById('dark');
-const darkMode = document.getElementById('darkmode');
 const dashboard = document.getElementById('dashboard');
 const fpsCounter = document.getElementById("fpsCounter");
 const knownOnly = document.getElementById("knownonly");
@@ -561,7 +559,7 @@ function logMsg(text) {
 
 /**
  * @name updateTheme
- * Sets the theme to  Adafruit (dark) mode. Can be refactored later for more themes
+ * Sets the theme to light mode. Can be refactored later for more themes
  */
 function updateTheme() {
   // Disable all themes
@@ -653,17 +651,6 @@ async function clickTimestamp() {
 }
 
 /**
- * @name clickDarkMode
- * Change handler for the Dark Mode checkbox.
- */
-async function clickDarkMode() {
-  updateTheme();
-  saveSetting('darkmode', darkMode.checked);
-}
-
-
-
-/**
  * @name clickKnownOnly
  * Change handler for the Show Only Known Devices checkbox.
  */
@@ -700,7 +687,6 @@ function loadAllSettings() {
   // Load all saved settings or defaults
   autoscroll.checked = loadSetting('autoscroll', true);
   showTimestamp.checked = loadSetting('timestamp', false);
-  darkMode.checked = false;
   knownOnly.checked = loadSetting('knownonly', true);
 }
 
