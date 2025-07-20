@@ -42,7 +42,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   butClear.addEventListener('click', clickClear);
   autoscroll.addEventListener('click', clickAutoscroll);
   showTimestamp.addEventListener('click', clickTimestamp);
-  darkMode.addEventListener('click', clickDarkMode);
   knownOnly.addEventListener('click', clickKnownOnly);
 
   if ('bluetooth' in navigator) {
@@ -572,11 +571,7 @@ function updateTheme() {
       enableStyleSheet(styleSheet, false);
     });
 
-  if (darkMode.checked) {
-    enableStyleSheet(darkSS, true);
-  } else {
-    enableStyleSheet(lightSS, true);
-  }
+  enableStyleSheet(lightSS, true);
 }
 
 function enableStyleSheet(node, enabled) {
@@ -705,7 +700,7 @@ function loadAllSettings() {
   // Load all saved settings or defaults
   autoscroll.checked = loadSetting('autoscroll', true);
   showTimestamp.checked = loadSetting('timestamp', false);
-  darkMode.checked = loadSetting('darkmode', true);
+  darkMode.checked = false;
   knownOnly.checked = loadSetting('knownonly', true);
 }
 
