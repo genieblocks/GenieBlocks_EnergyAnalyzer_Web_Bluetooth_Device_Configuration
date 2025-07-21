@@ -577,3 +577,74 @@ div.clear {
   color: white;
   text-shadow: rgba(0, 0, 0, 0.5) 0 0 5px;
 }
+
+@media (max-width: 800px) {
+  .header, .footer, .subheader {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .header {
+    flex-direction: column;
+    height: auto;
+    padding: 10px 10px 0 10px;
+  }
+  .header .left, .header .right {
+    float: none;
+    display: block;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .GenieBlocks-Logo {
+    margin: 0 auto 10px auto;
+    display: block;
+  }
+  .subheader .title {
+    font-size: 22px;
+    line-height: 1.2;
+    text-align: center;
+  }
+  .main {
+    padding-top: 120px;
+  }
+  .otaa-form {
+    max-width: 100%;
+    padding: 10px;
+  }
+  .otaa-form .form-row {
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: 20px;
+  }
+  .otaa-form label {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 5px;
+    padding-right: 0;
+  }
+  .otaa-form input {
+    width: 100%;
+    margin-bottom: 8px;
+    min-width: 0;
+  }
+  .otaa-form button {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+}
+
+@media (max-width: 500px) {
+  .header, .footer, .subheader {
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+  .main {
+    padding-top: 100px;
+  }
+  .otaa-form {
+    padding: 2px;
+  }
+  #log {
+    padding: 0 2px;
+    font-size: 13px;
+  }
+}
