@@ -79,7 +79,6 @@ div.clear {
   width: 115px;
   height: 40px;
   object-fit: contain;
-  filter: invert(1);
 }
 
 .otaa-form {
