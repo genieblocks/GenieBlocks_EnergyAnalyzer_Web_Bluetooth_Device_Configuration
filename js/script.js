@@ -303,12 +303,15 @@ async function clickConnect() {
   try {
     await connect();
     setOtaaButtonsEnabled(true);
-    // Bağlantı kurulduğunda otomatik olarak bilgileri çek
-    readValue('device_eui');
-    readValue('app_eui');
-    readValue('app_key');
     toggleUIConnected(true);
     logMsg('Bluetooth cihazları başarıyla bulundu ve bağlanıldı.');
+    try {
+      await readValue('device_eui');
+      await readValue('app_eui');
+      await readValue('app_key');
+    } catch (e) {
+      logMsg('Bağlantı kuruldu fakat cihazdan veri okunamadı: ' + e);
+    }
   } catch (e) {
     setOtaaButtonsEnabled(false);
     logMsg('Bluetooth cihazı bulunamadı veya bağlantı reddedildi.');
