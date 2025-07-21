@@ -157,12 +157,13 @@ async function connect() {
     logMsg('Bluetooth cihazları aranıyor...');
     device = await navigator.bluetooth.requestDevice({
       acceptAllDevices: true,
-      optionalServices: [] // GATT servis UUID'leri eklenebilir
+      optionalServices: [
+        '0000abcd-0000-1000-8000-00805f9b34fb'
+      ]
     });
     logMsg('Cihaz seçildi: ' + device.name);
     const server = await device.gatt.connect();
     logMsg('Bluetooth bağlantısı kuruldu.');
-    // Bağlantı başarılı, burada istenirse servis/characteristic işlemleri yapılabilir
     return server;
   } catch (error) {
     logMsg('Bluetooth bağlantısı başarısız: ' + error);
