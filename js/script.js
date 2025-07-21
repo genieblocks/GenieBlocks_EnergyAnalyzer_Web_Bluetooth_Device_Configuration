@@ -52,15 +52,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     notSupported.style.display = 'none';
   }
   butConnect.addEventListener('click', clickConnect);
-  butClear.addEventListener('click', clickClear);
-  autoscroll.addEventListener('click', clickAutoscroll);
-  showTimestamp.addEventListener('click', clickTimestamp);
-  knownOnly.addEventListener('click', clickKnownOnly);
-
+  // Eğer log göster/gizle butonu varsa onu da burada ekle
+  const toggleLog = document.getElementById('toggleLog');
+  if (toggleLog) {
+    toggleLog.addEventListener('click', () => {
+      const logArea = document.getElementById('log');
+      if (logArea.style.display === 'block') {
+        logArea.style.display = 'none';
+      } else {
+        logArea.style.display = 'block';
+      }
+    });
+  }
+  // Diğer eski butonlar kaldırıldı
   loadAllSettings();
   updateTheme();
   await updateAllPanels();
-  //createMockPanels();
   setOtaaButtonsEnabled(false);
 });
 
