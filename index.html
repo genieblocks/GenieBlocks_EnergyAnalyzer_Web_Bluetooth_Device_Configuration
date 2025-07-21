@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>GenieBlocks Web Bluetooth Dashboard</title>
+    <title>GenieBlocks LoRaWAN OTAA Configuration</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -66,10 +66,27 @@
       </div>
       <div class="subheader">
         <div class="title left">
-          Web Bluetooth Dashboard
+          GenieBlocks LoRaWAN Configuration
         </div>
       </div>
-      <div id="dashboard"></div>
+      <div id="dashboard">
+        <div class="otaa-form">
+          <label for="device_eui">Device EUI:</label>
+          <input type="text" id="device_eui" name="device_eui">
+          <button id="read_device_eui">Read</button>
+          <button id="write_device_eui">Write</button>
+          <br>
+          <label for="app_eui">APP EUI:</label>
+          <input type="text" id="app_eui" name="app_eui">
+          <button id="read_app_eui">Read</button>
+          <button id="write_app_eui">Write</button>
+          <br>
+          <label for="app_key">APP Key:</label>
+          <input type="text" id="app_key" name="app_key">
+          <button id="read_app_key">Read</button>
+          <button id="write_app_key">Write</button>
+        </div>
+      </div>
       <div id="log"></div>
     </main>
     <footer class="footer">
@@ -92,103 +109,11 @@
         </div>
       </div>
       <div class="right">
-        <span id="fpsCounter"></span>
         <button id="butClear" type="button">Clear Text</button>
       </div>
     </footer>
     <div id="templates">
-      <div class="text">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
-          <p>
-          content
-          </p>
-        </div>
-      </div>
-      <div class="graph">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
-          <div class="text">
-            <p></p>
-          </div>
-          <div class="chart">
-            <canvas></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="color">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
-          <div></div>
-        </div>
-      </div>
-      <div class="model3d">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
-          <canvas></canvas>
-        </div>
-      </div>
-      <div class="battery-level">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
-          <div class="battery" data-toggle="tooltip" title="Battery Level: 100%">
-            <span class="level" style="width:100%;"></span>
-          </div>
-          <div class="percentage">
-            100%
-          </div>
-        </div>
-      </div>
-      <div class="play-button">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
-          <div class="button">
-            <span></span>
-          </div>
-        </div>
-      </div>
-      <div class="onboard-buttons">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
-        </div>
-      </div>
-      <div class="onboard-switch">
-        <div class="title">
-          title
-        </div>
-        <div class="content">
-          <div class="onoffswitch">
-            <input type="checkbox" name="onboardSwitch" class="onoffswitch-checkbox" id="onboardSwitch" disabled>
-            <label class="onoffswitch-label" for="onboardSwitch">
-              <span class="onoffswitch-inner"></span>
-              <span class="onoffswitch-switch"></span>
-            </label>
-          </div>
-        </div>
-      </div>
-      <div class="roundbutton">
-        <div class="buttonpanel">
-          <div class="roundbtn">
-            <div class="inner">
-              <span class="text"></span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- templates'i kaldır çünkü gereksiz -->
     </div>
   </body>
 </html>

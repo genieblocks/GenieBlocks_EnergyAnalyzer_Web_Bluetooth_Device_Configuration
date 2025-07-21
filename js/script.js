@@ -55,276 +55,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 const boards = {
-  CLUE: {
-    colorOrder: 'GRB',
-    neopixels: 1,
-    hasSwitch: false,
-    buttons: 2,
-  },
-  CPlay: {
-    colorOrder: 'GRB',
-    neopixels: 10,
-    hasSwitch: true,
-    buttons: 2,
-  },
-  Sense: {
-    colorOrder: 'GRB',
-    neopixels: 1,
-    hasSwitch: false,
-    buttons: 1,
-  },
   GB_LoRa: {
     colorOrder: 'GRB',
     neopixels: 0,
-    hasSwitch: false,
-    buttons: 1,
-  },
-  unknown: {
-    colorOrder: 'GRB',
-    neopixels: 1,
     hasSwitch: false,
     buttons: 1,
   }
 }
 
 let panels = {
-  accelerometer: {
-    serviceId: '0010-0000',
-    characteristicId: '0010-0001',
-    panelType: "graph",
-    structure: ['Float32', 'Float32', 'Float32'],
-    data: {x:[], y:[], z:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.00');
-    },
-    // measurementPeriod: 500,
+  device_eui: {
+    title: 'Device EUI',
+    serviceId: 'lora_service',
+    characteristicId: 'device_eui',
+    panelType: 'custom',
+    properties: ['read', 'write'],
   },
-  gyroscope: {
-    serviceId: '0012-0000',
-    characteristicId: '0012-0001',
-    panelType: "graph",
-    structure: ['Float32', 'Float32', 'Float32'],
-    data: {x:[], y:[], z:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.00');
-    },
-    // measurementPeriod: 500,
+  app_eui: {
+    title: 'APP EUI',
+    serviceId: 'lora_service',
+    characteristicId: 'app_eui',
+    panelType: 'custom',
+    properties: ['read', 'write'],
   },
-  magnetometer: {
-    serviceId: '0014-0000',
-    characteristicId: '0014-0001',
-    panelType: "graph",
-    structure: ['Float32', 'Float32', 'Float32'],
-    data: {x:[], y:[], z:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.00') + ' &micro;T';
-    },
-    // measurementPeriod: 500,
-  },
-  barometric_pressure: {
-    serviceId: '0016-0000',
-    characteristicId: '0016-0001',
-    panelType: "graph",
-    structure: ['Float32'],
-    data: {barometric:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.00') + ' hPA';
-    },
-  },
-  temperature: {
-    serviceId: '1430-0000',
-    characteristicId: '1430-0001',
-    panelType: "graph",
-    structure: ['Float32'],
-    data: {temperature:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      // return numeral((9 / 5 * value) + 32).format('0.00') + '&deg; F';
-      return numeral(value).format('0.00') + '&deg; C';
-    },
-  },
-  battery: {
-    title: 'Battery Level',
-    serviceId: 'battery_service',
-    characteristicId: 'battery_level',
-    panelType: "custom",
-    structure: ['Uint8'],
-    data: {battery:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.0') + '%';
-    },
-    create: function(panelId) {
-      let panelTemplate = loadPanelTemplate(panelId, 'battery-level');
-      this.update(panelId);
-    },
-    update: function(panelId) {
-      let panelElement = document.querySelector("#dashboard > #" + panelId);
-      let value = null;
-      if (panels[panelId].data.battery.length > 0) {
-        value = panels[panelId].data.battery.pop();
-        panels[panelId].data.battery = [];
-      }
-
-      if (value != null && value <= 25) { // Show Red
-        panelElement.querySelector(".content .battery").classList.remove("battery-middle");
-        panelElement.querySelector(".content .battery").classList.add("battery-alert");
-      } else if (value == null || value <= 50) { // Show Yellow
-        panelElement.querySelector(".content .battery").classList.remove("battery-alert");
-        panelElement.querySelector(".content .battery").classList.add("battery-middle");
-      } else { // Show Green
-        panelElement.querySelector(".content .battery").classList.remove("battery-middle");
-        panelElement.querySelector(".content .battery").classList.remove("battery-alert");
-      }
-
-      if (value == null) {
-        panelElement.querySelector(".content .percentage").innerHTML = '?';
-        panelElement.querySelector(".content .battery .level").style.width = '100%';
-        panelElement.querySelector(".content .battery").title = 'Battery Level: ?';
-      } else {
-        panelElement.querySelector(".content .battery .level").style.width = value + '%';
-        value = panels[panelId].textFormat(value);
-        panelElement.querySelector(".content .percentage").innerHTML = value;
-        panelElement.querySelector(".content .battery").title = 'Battery Level: ' + value;
-      }
-    },
-  },
-  ota_status: {
-    serviceId: '0006-0000',
-    characteristicId: '0006-0004',
-    panelType: "text",
-    structure: ['Uint8'],
-    data: {ota_status:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return 'Available<br><br> Value: ' + value;
-    },
-  },
-  buttons: {
-    serviceId: '001a-0000',
-    characteristicId: '001a-0001',
-    panelType: "custom",
-    structure: ['Uint32'],
-    data: {buttonState:[]},
-    properties: ['notify'],
-    create: function(panelId) {
-      let panelTemplate = loadPanelTemplate(panelId, 'onboard-buttons');
-      for (let i = 0; i < currentBoard.buttons; i++) {
-        let buttonTemplate = document.querySelector("#templates > .roundbutton").cloneNode(true);
-        buttonTemplate.id = "button_" + (i + 1);
-        buttonTemplate.querySelector(".text").innerHTML = String.fromCharCode(65 + i);
-        panelTemplate.querySelector(".content").appendChild(buttonTemplate);
-      }
-    },
-    update: function(panelId) {
-      let panelElement = document.querySelector("#dashboard > #" + panelId);
-      buttonState = panels[panelId].data.buttonState.pop();
-      if (panels.switch.condition()) {
-        panels.switch.update('switch'); // Update the switch because we aren't doing 2 notifys
-      }
-      // Match the buttons to the values
-      for (let i = 1; i <= currentBoard.buttons; i++) {
-        if (buttonState & (1 << i)) {
-          panelElement.querySelector("#button_" + i + " .roundbtn").classList.add("pressed");
-        } else {
-          panelElement.querySelector("#button_" + i + " .roundbtn").classList.remove("pressed");
-        }
-      }
-    },
-  },
-  hall_effect: {
-    serviceId: '0020-0000',
-    characteristicId: '0020-0001',
-    panelType: "graph",
-    structure: ['Float32'],
-    data: {halleffect:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.00') + ' &micro;T';
-    },
-    // measurementPeriod: 200,
-  },
-  switch: {
-    serviceId: '1432-0000',
-    characteristicId: '1432-0001',
-    panelType: "custom",
-    structure: ['Uint32'],
-    data: {buttonState:[]},
-    properties: [],
-    condition: function() {
-      return currentBoard.hasSwitch;
-    },
-    create: function(panelId) {
-      let panelTemplate = loadPanelTemplate(panelId, 'onboard-switch');
-      this.update(panelId);
-    },
-    update: function(panelId) {
-      // UI Only Update
-      let panelElement = document.querySelector("#dashboard > #" + panelId);
-      panelElement.querySelector(".content #onboardSwitch").checked = buttonState & 1;
-    },
-  },
-  humidity: {
-    serviceId: '1433-0000',
-    characteristicId: '1433-0001',
-    panelType: "graph",
-    structure: ['Float32'],
-    data: {humidity:[]},
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.0') + '%';
-    },
-  },
-  tone: {
-    serviceId: '0018-0000',
-    characteristicId: '0018-0001',
-    panelType: "custom",
-    create: function(panelId) {
-      let panelTemplate = loadPanelTemplate(panelId, 'play-button');
-      panelTemplate.querySelector(".content .button").onclick = function() {
-        let button = this;
-        button.disabled = true;
-        playSound(440, 1000, function() {button.disabled = false;})
-      }
-      this.packetSequence = this.structure;
-    },
-    structure: ['Uint16', 'Uint32'],
-    properties: ['write'],
-  },
-  light: {
-    serviceId: '1431-0000',
-    characteristicId: '1431-0001',
-    panelType: "graph",
-    structure: ['Float32'],
-    data: {light:[]},
-    properties: ['notify'],
-  },
-  neopixel: {
-    serviceId: '1434-0000',
-    characteristicId: '1434-0001',
-    panelType: "color",
-    structure: ['Uint16', 'Uint8', 'Uint8[]'],
-    data: {R:[],G:[],B:[]},
-    properties: ['write'],
-  },
-  'model3d': {
-    title: '3D Model',
-    serviceId: '1435-0000',
-    characteristicId: '1435-0001',
-    panelType: "model3d",
-    structure: ['Float32', 'Float32', 'Float32', 'Float32'],
-    data: {w:[],x:[], y:[], z:[]},
-    style: "font-size: 16px;",
-    properties: ['notify'],
-    textFormat: function(value) {
-      return numeral(value).format('0.00') + ' rad';
-    },
-    // measurementPeriod: 200,
-  },
+  app_key: {
+    title: 'APP Key',
+    serviceId: 'lora_service',
+    characteristicId: 'app_key',
+    panelType: 'custom',
+    properties: ['read', 'write'],
+  }
 };
 
 function playSound(frequency, duration, callback) {

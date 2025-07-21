@@ -75,10 +75,25 @@ div.clear {
   clear: both;
 }
 
-.Adafruit-Logo {
+.GenieBlocks-Logo {
   width: 115px;
   height: 40px;
   object-fit: contain;
+  filter: invert(1);
+}
+
+.otaa-form {
+  padding: 20px;
+}
+
+.otaa-form label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.otaa-form input {
+  width: 300px;
+  margin-right: 10px;
 }
 
 .main {
