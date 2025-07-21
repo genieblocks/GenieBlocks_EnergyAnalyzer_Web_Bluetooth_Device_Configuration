@@ -42,6 +42,7 @@ body {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 28px;
+  gap: 12px;
 }
 
 .status {
@@ -231,6 +232,17 @@ body {
   h1 {
     font-size: 1.15em !important;
     word-break: break-word;
+    text-align: center;
+  }
+  .connection-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  #butConnect, .status {
+    width: 100%;
+    box-sizing: border-box;
     text-align: center;
   }
 }
