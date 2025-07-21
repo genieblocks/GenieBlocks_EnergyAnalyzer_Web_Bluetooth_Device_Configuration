@@ -40,6 +40,9 @@ function setOtaaButtonsEnabled(enabled) {
   document.getElementById('write_app_eui').disabled = !enabled;
   document.getElementById('read_app_key').disabled = !enabled;
   document.getElementById('write_app_key').disabled = !enabled;
+  document.getElementById('device_eui').disabled = !enabled;
+  document.getElementById('app_eui').disabled = !enabled;
+  document.getElementById('app_key').disabled = !enabled;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
