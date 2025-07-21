@@ -46,16 +46,17 @@ function setOtaaButtonsEnabled(enabled) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const notSupported = document.getElementById('notSupported');
+  if (!('bluetooth' in navigator)) {
+    notSupported.style.display = 'block';
+  } else {
+    notSupported.style.display = 'none';
+  }
   butConnect.addEventListener('click', clickConnect);
   butClear.addEventListener('click', clickClear);
   autoscroll.addEventListener('click', clickAutoscroll);
   showTimestamp.addEventListener('click', clickTimestamp);
   knownOnly.addEventListener('click', clickKnownOnly);
-
-  if ('bluetooth' in navigator) {
-    const notSupported = document.getElementById('notSupported');
-    notSupported.classList.add('hidden');
-  }
 
   loadAllSettings();
   updateTheme();
