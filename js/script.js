@@ -341,16 +341,17 @@ function logMsg(text) {
  */
 function updateTheme() {
   // Disable all themes
-  document
-    .querySelectorAll('link[rel=stylesheet].alternate')
-    .forEach((styleSheet) => {
+  const alternates = document.querySelectorAll('link[rel=stylesheet].alternate');
+  if (alternates && alternates.length > 0) {
+    alternates.forEach((styleSheet) => {
       enableStyleSheet(styleSheet, false);
     });
-
-  enableStyleSheet(lightSS, true);
+  }
+  enableStyleSheet(typeof lightSS !== 'undefined' && lightSS ? lightSS : document.getElementById('light'), true);
 }
 
 function enableStyleSheet(node, enabled) {
+  if (!node) return;
   node.disabled = !enabled;
 }
 
