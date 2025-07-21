@@ -9,9 +9,6 @@
 
 'use strict';
 
-import * as THREE from 'three';
-import {GLTFLoader} from 'gltfloader';
-
 let device;
 
 const bufferSize = 64;
