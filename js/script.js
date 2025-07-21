@@ -46,10 +46,8 @@ function setOtaaButtonsEnabled(enabled) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const notSupported = document.getElementById('notSupported');
-  const isChrome = /Chrome\//.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-  const hasBluetooth = 'bluetooth' in navigator;
-  if (!isChrome || !hasBluetooth) {
+  const notSupported = document.getElementById('notSupported');
+  if (!('bluetooth' in navigator)) {
     notSupported.style.display = 'block';
   } else {
     notSupported.style.display = 'none';
