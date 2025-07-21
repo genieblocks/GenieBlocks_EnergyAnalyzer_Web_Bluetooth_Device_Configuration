@@ -311,6 +311,7 @@ async function clickConnect() {
       await readValue('app_key');
     } catch (e) {
       logMsg('Bağlantı kuruldu fakat cihazdan veri okunamadı: ' + e);
+      setOtaaButtonsEnabled(false);
     }
   } catch (e) {
     setOtaaButtonsEnabled(false);
