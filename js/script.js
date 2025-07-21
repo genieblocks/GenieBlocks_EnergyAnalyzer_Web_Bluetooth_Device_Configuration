@@ -381,21 +381,27 @@ async function reset() {
  * Click handler for the connect/disconnect button.
  */
 async function clickConnect() {
-  if (device && device.gatt.connected) {
+  if (device && device.gatt && device.gatt.connected) {
     await disconnect();
     setOtaaButtonsEnabled(false);
+    toggleUIConnected(false);
     return;
   }
-  await connect().then(_ => {
+  butConnect.textContent = 'Bağlanıyor...';
+  try {
+    await connect();
     setOtaaButtonsEnabled(true);
     // Bağlantı kurulduğunda otomatik olarak bilgileri çek
     readValue('device_eui');
     readValue('app_eui');
     readValue('app_key');
     toggleUIConnected(true);
-  }).catch(() => {
+    logMsg('Bluetooth cihazları başarıyla bulundu ve bağlanıldı.');
+  } catch (e) {
     setOtaaButtonsEnabled(false);
-  });
+    logMsg('Bluetooth cihazı bulunamadı veya bağlantı reddedildi.');
+  }
+  butConnect.textContent = device && device.gatt && device.gatt.connected ? 'Bağlantıyı Kes' : 'Cihaza Bağlan';
 }
 
 async function onDisconnected(event) {
