@@ -806,3 +806,40 @@ function createMockPanels() {
     }
   }
 }
+
+async function readValue(type) {
+  try {
+    if (!device || !device.gatt || !device.gatt.connected) throw 'Bluetooth bağlantısı yok.';
+    const SERVICE_UUID = '0000abcd-0000-1000-8000-00805f9b34fb';
+    let CHAR_UUID = '';
+    let inputId = '';
+    if (type === 'device_eui') {
+      CHAR_UUID = '0000a001-0000-1000-8000-00805f9b34fb';
+      inputId = 'device_eui';
+    } else if (type === 'app_eui') {
+      CHAR_UUID = '0000a002-0000-1000-8000-00805f9b34fb';
+      inputId = 'app_eui';
+    } else if (type === 'app_key') {
+      CHAR_UUID = '0000a003-0000-1000-8000-00805f9b34fb';
+      inputId = 'app_key';
+    } else {
+      throw 'Bilinmeyen karakteristik tipi';
+    }
+    const server = device.gatt.connected ? device.gatt : await device.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE_UUID);
+    const characteristic = await service.getCharacteristic(CHAR_UUID);
+    const value = await characteristic.readValue();
+    // 8 veya 16 byte'ı hex string olarak göster
+    let hex = '';
+    for (let i = 0; i < value.byteLength; i++) {
+      hex += value.getUint8(i).toString(16).padStart(2, '0').toUpperCase();
+    }
+    document.getElementById(inputId).value = hex;
+    logMsg(inputId + ' okundu: ' + hex);
+  } catch (e) {
+    logMsg(type + ' okunamadı: ' + e);
+    throw e;
+  }
+}
+
+// writeValue fonksiyonu kaldırıldı/disable edildi çünkü karakteristikler sadece read.
