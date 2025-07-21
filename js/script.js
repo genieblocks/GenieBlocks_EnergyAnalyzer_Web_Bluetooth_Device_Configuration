@@ -36,6 +36,15 @@ let bytesReceived = 0;
 let currentBoard;
 let buttonState = 0;
 
+function setOtaaButtonsEnabled(enabled) {
+  document.getElementById('read_device_eui').disabled = !enabled;
+  document.getElementById('write_device_eui').disabled = !enabled;
+  document.getElementById('read_app_eui').disabled = !enabled;
+  document.getElementById('write_app_eui').disabled = !enabled;
+  document.getElementById('read_app_key').disabled = !enabled;
+  document.getElementById('write_app_key').disabled = !enabled;
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   butConnect.addEventListener('click', clickConnect);
   butClear.addEventListener('click', clickClear);
@@ -52,6 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateTheme();
   await updateAllPanels();
   //createMockPanels();
+  setOtaaButtonsEnabled(false);
 });
 
 const boards = {
@@ -370,10 +380,19 @@ async function reset() {
 async function clickConnect() {
   if (device && device.gatt.connected) {
     await disconnect();
+    setOtaaButtonsEnabled(false);
     return;
   }
-
-  await connect().then(_ => {toggleUIConnected(true);}).catch(() => {});
+  await connect().then(_ => {
+    setOtaaButtonsEnabled(true);
+    // Bağlantı kurulduğunda otomatik olarak bilgileri çek
+    readValue('device_eui');
+    readValue('app_eui');
+    readValue('app_key');
+    toggleUIConnected(true);
+  }).catch(() => {
+    setOtaaButtonsEnabled(false);
+  });
 }
 
 async function onDisconnected(event) {
@@ -393,6 +412,7 @@ async function onDisconnected(event) {
 
   device = undefined;
   currentBoard = undefined;
+  setOtaaButtonsEnabled(false);
 }
 
 /**
