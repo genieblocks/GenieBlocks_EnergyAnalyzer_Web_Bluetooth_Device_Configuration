@@ -43,7 +43,7 @@ function setOtaaButtonsEnabled(enabled) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const notSupported = document.getElementById('notSupported');
+    const notSupported = document.getElementById('notSupported');
   const isChrome = /Chrome\//.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
   const hasBluetooth = 'bluetooth' in navigator;
   if (!isChrome || !hasBluetooth) {
@@ -479,9 +479,9 @@ function toggleUIConnected(connected) {
 
 function loadAllSettings() {
   // Load all saved settings or defaults
-  autoscroll.checked = loadSetting('autoscroll', true);
-  showTimestamp.checked = loadSetting('timestamp', false);
-  knownOnly.checked = loadSetting('knownonly', true);
+  if (typeof autoscroll !== 'undefined' && autoscroll) autoscroll.checked = loadSetting('autoscroll', true);
+  if (typeof showTimestamp !== 'undefined' && showTimestamp) showTimestamp.checked = loadSetting('timestamp', false);
+  if (typeof knownOnly !== 'undefined' && knownOnly) knownOnly.checked = loadSetting('knownonly', true);
 }
 
 function loadSetting(setting, defaultValue) {
