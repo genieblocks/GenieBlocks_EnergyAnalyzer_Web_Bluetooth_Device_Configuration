@@ -84,6 +84,39 @@ div.clear {
 
 .otaa-form {
   padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.otaa-form label {
+  width: 120px;
+  text-align: right;
+  padding-right: 10px;
+}
+
+.otaa-form .form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.otaa-form input {
+  flex: 1;
+  padding: 5px;
+  margin-right: 10px;
+}
+
+.otaa-form button {
+  padding: 5px 15px;
+  border-radius: 20px;
+  background-color: #00a7e9;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.otaa-form button:hover {
+  background-color: #008dc3;
 }
 
 .otaa-form label {
