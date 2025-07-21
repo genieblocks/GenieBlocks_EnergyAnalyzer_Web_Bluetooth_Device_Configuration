@@ -315,7 +315,7 @@ function getFullId(shortId) {
 
 function logMsg(text) {
   // Update the Log
-  if (showTimestamp.checked) {
+  if (typeof showTimestamp !== 'undefined' && showTimestamp && showTimestamp.checked) {
     let d = new Date();
     let timestamp = d.getHours() + ":" + `${d.getMinutes()}`.padStart(2, 0) + ":" +
         `${d.getSeconds()}`.padStart(2, 0) + "." + `${d.getMilliseconds()}`.padStart(3, 0);
@@ -330,7 +330,7 @@ function logMsg(text) {
     log.innerHTML = logLines.splice(-maxLogLength).join("<br>\n");
   }
 
-  if (autoscroll.checked) {
+  if (typeof autoscroll !== 'undefined' && autoscroll && autoscroll.checked) {
     log.scrollTop = log.scrollHeight
   }
 }
