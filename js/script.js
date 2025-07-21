@@ -152,113 +152,20 @@ function encodePacket(panelId, values) {
  * output stream.
  */
 async function connect() {
-  // - Request a port and open a connection.
-  if (!device) {
-    logMsg('Connecting to device ...');
-    let services = [];
-    for (let panelId of Object.keys(panels)) {
-      services.push(getFullId(panels[panelId].serviceId));
-    }
-    if (knownOnly.checked) {
-      let knownBoards = Object.keys(boards);
-      knownBoards.pop();
-      let filters = [];
-      for(let board of knownBoards) {
-        filters.push({name: board});
-      }
-      device = await navigator.bluetooth.requestDevice({
-        filters: filters,
-        optionalServices: services,
-      });
-    } else {
-      device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: services,
-      });
-    }
-  }
-  if (device) {
-    logMsg("Connected to device " + device.name);
-    if (boards.hasOwnProperty(device.name)) {
-      currentBoard = boards[device.name];
-    } else {
-      currentBoard = boards.unknown;
-    }
-    device.addEventListener('gattserverdisconnected', onDisconnected);
-    let server = await device.gatt.connect();
-    const availableServices = await server.getPrimaryServices();
-
-    // Create the panels only if service available
-    for (let panelId of Object.keys(panels)) {
-      if (panels[panelId].condition == undefined || panels[panelId].condition()) {
-        if (getFullId(panels[panelId].serviceId).substr(0, 8) == "9b489064") {
-          for (const service of availableServices) {
-            if (getFullId(panels[panelId].serviceId) == service.uuid) {
-              createPanel(panelId);
-            }
-          }
-        } else {
-          // Non-custom ones such as battery are always active
-          createPanel(panelId);
-        }
-      }
-    }
-
-    reset();
-
-    for (let panelId of activePanels) {
-      let service = await server.getPrimaryService(getFullId(panels[panelId].serviceId)).catch(error => {console.log(error);});
-      if (service) {
-        panels[panelId].characteristic = await service.getCharacteristic(getFullId(panels[panelId].characteristicId)).catch(error => {console.log(error);});
-        logMsg('');
-        logMsg('Characteristic Information');
-        logMsg('---------------------------');
-        logMsg('> Sensor:               ' + ucWords(panelId));
-        logMsg('> Characteristic UUID:  ' + panels[panelId].characteristic.uuid);
-        logMsg('> Broadcast:            ' + panels[panelId].characteristic.properties.broadcast);
-        logMsg('> Read:                 ' + panels[panelId].characteristic.properties.read);
-        logMsg('> Write w/o response:   ' + panels[panelId].characteristic.properties.writeWithoutResponse);
-        logMsg('> Write:                ' + panels[panelId].characteristic.properties.write);
-        logMsg('> Notify:               ' + panels[panelId].characteristic.properties.notify);
-        logMsg('> Indicate:             ' + panels[panelId].characteristic.properties.indicate);
-        logMsg('> Signed Write:         ' + panels[panelId].characteristic.properties.authenticatedSignedWrites);
-        logMsg('> Queued Write:         ' + panels[panelId].characteristic.properties.reliableWrite);
-        logMsg('> Writable Auxiliaries: ' + panels[panelId].characteristic.properties.writableAuxiliaries);
-
-        if (panels[panelId].properties.includes("notify")) {
-          if (panels[panelId].measurementPeriod !== undefined) {
-            let mpChar = await service.getCharacteristic(getFullId(measurementPeriodId)).catch(error => {console.log(error);});
-            let view = new DataView(new ArrayBuffer(4));
-            view.setInt32(0, panels[panelId].measurementPeriod, true);
-            mpChar.writeValue(view.buffer)
-              .catch(error => {console.log(error);})
-              .then(_ => {
-              logMsg("Changed measurement period for " + ucWords(panelId) + " to " + panels[panelId].measurementPeriod + "ms");
-            });
-          }
-          logMsg('Starting notifications for ' + ucWords(panelId));
-          await panels[panelId].characteristic.startNotifications();
-          panels[panelId].characteristic.addEventListener('characteristicvaluechanged', function(event){handleIncoming(panelId, event.target.value);});
-        }
-        if (panels[panelId].properties.includes("read")) {
-          let intervalPeriod = 1000;
-          if (panels[panelId].measurementPeriod !== undefined) {
-            intervalPeriod = panels[panelId].measurementPeriod;
-          }
-          panels[panelId].polling = setInterval(function() {
-            if (!panels[panelId].readInProgress) {
-              panels[panelId].readInProgress = true;
-            panels[panelId].characteristic.readValue()
-              .then(function(data) {
-                handleIncoming(panelId, data);
-               }).catch(error => {});
-              panels[panelId].readInProgress = false;
-            }
-          }, intervalPeriod);
-        }
-      }
-    }
-    readActiveSensors();
+  try {
+    logMsg('Bluetooth cihazları aranıyor...');
+    device = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: [] // GATT servis UUID'leri eklenebilir
+    });
+    logMsg('Cihaz seçildi: ' + device.name);
+    const server = await device.gatt.connect();
+    logMsg('Bluetooth bağlantısı kuruldu.');
+    // Bağlantı başarılı, burada istenirse servis/characteristic işlemleri yapılabilir
+    return server;
+  } catch (error) {
+    logMsg('Bluetooth bağlantısı başarısız: ' + error);
+    throw error;
   }
 }
 
