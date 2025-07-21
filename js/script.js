@@ -479,9 +479,12 @@ function toggleUIConnected(connected) {
 
 function loadAllSettings() {
   // Load all saved settings or defaults
-  if (typeof autoscroll !== 'undefined' && autoscroll) autoscroll.checked = loadSetting('autoscroll', true);
-  if (typeof showTimestamp !== 'undefined' && showTimestamp) showTimestamp.checked = loadSetting('timestamp', false);
-  if (typeof knownOnly !== 'undefined' && knownOnly) knownOnly.checked = loadSetting('knownonly', true);
+  var _autoscroll = typeof autoscroll !== 'undefined' && autoscroll ? autoscroll : document.getElementById('autoscroll');
+  var _showTimestamp = typeof showTimestamp !== 'undefined' && showTimestamp ? showTimestamp : document.getElementById('showTimestamp');
+  var _knownOnly = typeof knownOnly !== 'undefined' && knownOnly ? knownOnly : document.getElementById('knownonly');
+  if (_autoscroll) _autoscroll.checked = loadSetting('autoscroll', true);
+  if (_showTimestamp) _showTimestamp.checked = loadSetting('timestamp', false);
+  if (_knownOnly) _knownOnly.checked = loadSetting('knownonly', true);
 }
 
 function loadSetting(setting, defaultValue) {
