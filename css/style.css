@@ -153,6 +153,40 @@ body {
   text-align: left;
 }
 
+.bt-warning {
+  display: flex;
+  align-items: flex-start;
+  background: #fff3cd;
+  color: #856404;
+  border: 1.5px solid #ffeeba;
+  border-radius: 10px;
+  padding: 18px 18px 14px 18px;
+  margin: 18px auto 24px auto;
+  max-width: 480px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  font-size: 1.08em;
+}
+.bt-warning-icon {
+  font-size: 2.1em;
+  margin-right: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.bt-warning-content {
+  flex: 1;
+}
+@media (max-width: 600px) {
+  .bt-warning {
+    max-width: 98vw;
+    padding: 12px 8px 10px 8px;
+    font-size: 0.98em;
+  }
+  .bt-warning-icon {
+    font-size: 1.5em;
+    margin-right: 8px;
+  }
+}
+
 @media (max-width: 600px) {
   .main-content {
     max-width: 98vw;
