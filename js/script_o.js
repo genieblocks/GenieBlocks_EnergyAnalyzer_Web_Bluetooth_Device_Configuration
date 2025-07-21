@@ -369,7 +369,9 @@ async function connect() {
     } else {
       device = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
-        optionalServices: services,
+        optionalServices: [
+          '0000abcd-0000-1000-8000-00805f9b34fb'
+        ]
       });
     }
   }
