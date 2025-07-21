@@ -381,9 +381,21 @@ function convertJSON(chunk) {
 }
 
 function toggleUIConnected(connected) {
-  let lbl = 'Connect';
+  let lbl = 'Cihaza Bağlan';
+  const status = document.getElementById('connection-status');
   if (connected) {
-    lbl = 'Disconnect';
+    lbl = 'Bağlantıyı Kes';
+    if (status) {
+      status.textContent = 'Bağlı';
+      status.classList.remove('disconnected');
+      status.classList.add('connected');
+    }
+  } else {
+    if (status) {
+      status.textContent = 'Bağlı Değil';
+      status.classList.remove('connected');
+      status.classList.add('disconnected');
+    }
   }
   butConnect.textContent = lbl;
 }
