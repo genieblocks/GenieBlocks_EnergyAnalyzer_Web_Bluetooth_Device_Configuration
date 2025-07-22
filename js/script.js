@@ -108,6 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Device EUI
       let v = ide.value.trim();
       let warn = ensureWarningSpan(ide);
+      console.log('Device EUI:', v, 'length:', v.length, 'hex:', /^[0-9a-fA-F]*$/.test(v));
       if (!/^[0-9a-fA-F]*$/.test(v)) {
         warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
         valid = false;
@@ -120,6 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // APP EUI
       v = iae.value.trim();
       warn = ensureWarningSpan(iae);
+      console.log('APP EUI:', v, 'length:', v.length, 'hex:', /^[0-9a-fA-F]*$/.test(v));
       if (!/^[0-9a-fA-F]*$/.test(v)) {
         warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
         valid = false;
@@ -132,6 +134,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // APP Key
       v = iak.value.trim();
       warn = ensureWarningSpan(iak);
+      console.log('APP KEY:', v, 'length:', v.length, 'hex:', /^[0-9a-fA-F]*$/.test(v));
       if (!/^[0-9a-fA-F]*$/.test(v)) {
         warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
         valid = false;
@@ -142,6 +145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         warn.textContent = '';
       }
       // Buton aktifliği
+      console.log('valid:', valid, 'disabled:', ide.disabled, iae.disabled, iak.disabled);
       if (valid && !ide.disabled && !iae.disabled && !iak.disabled) {
         writeAllBtn.disabled = false;
       } else {
