@@ -57,6 +57,57 @@ function setOtaaButtonsEnabled(enabled) {
     if (iae) iae.value = '';
     if (iak) iak.value = '';
   }
+  // inputlar enable olduğunda event'ları tekrar ekle
+  if (enabled && ide && iae && iak) {
+    console.log('Inputlar enable oldu, event ve checkInputs tekrar ekleniyor.');
+    const writeAllBtn = document.getElementById('write_all');
+    const checkInputs = () => {
+      console.log('checkInputs fonksiyonu çalıştı (setOtaaButtonsEnabled)');
+      let valid = true;
+      let v = ide.value.trim();
+      let warn = ide.nextElementSibling;
+      if (!/^[0-9a-fA-F]*$/.test(v)) {
+        if (warn) warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        valid = false;
+      } else if (v.length !== 16) {
+        if (warn) warn.textContent = 'Tam 8 byte (16 hex karakter) girin.';
+        valid = false;
+      } else {
+        if (warn) warn.textContent = '';
+      }
+      v = iae.value.trim();
+      warn = iae.nextElementSibling;
+      if (!/^[0-9a-fA-F]*$/.test(v)) {
+        if (warn) warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        valid = false;
+      } else if (v.length !== 16) {
+        if (warn) warn.textContent = 'Tam 8 byte (16 hex karakter) girin.';
+        valid = false;
+      } else {
+        if (warn) warn.textContent = '';
+      }
+      v = iak.value.trim();
+      warn = iak.nextElementSibling;
+      if (!/^[0-9a-fA-F]*$/.test(v)) {
+        if (warn) warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        valid = false;
+      } else if (v.length !== 32) {
+        if (warn) warn.textContent = 'Tam 16 byte (32 hex karakter) girin.';
+        valid = false;
+      } else {
+        if (warn) warn.textContent = '';
+      }
+      if (valid && !ide.disabled && !iae.disabled && !iak.disabled) {
+        if (writeAllBtn) writeAllBtn.disabled = false;
+      } else {
+        if (writeAllBtn) writeAllBtn.disabled = true;
+      }
+    };
+    ide.oninput = (e) => { console.log('device_eui input değişti (setOtaaButtonsEnabled):', e.target.value); checkInputs(); };
+    iae.oninput = (e) => { console.log('app_eui input değişti (setOtaaButtonsEnabled):', e.target.value); checkInputs(); };
+    iak.oninput = (e) => { console.log('app_key input değişti (setOtaaButtonsEnabled):', e.target.value); checkInputs(); };
+    checkInputs();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
