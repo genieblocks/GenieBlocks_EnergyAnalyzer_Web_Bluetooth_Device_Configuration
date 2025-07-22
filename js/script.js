@@ -34,19 +34,28 @@ let currentBoard;
 let buttonState = 0;
 
 function setOtaaButtonsEnabled(enabled) {
-  document.getElementById('read_device_eui').disabled = !enabled;
-  document.getElementById('write_device_eui').disabled = !enabled;
-  document.getElementById('read_app_eui').disabled = !enabled;
-  document.getElementById('write_app_eui').disabled = !enabled;
-  document.getElementById('read_app_key').disabled = !enabled;
-  document.getElementById('write_app_key').disabled = !enabled;
-  document.getElementById('device_eui').disabled = !enabled;
-  document.getElementById('app_eui').disabled = !enabled;
-  document.getElementById('app_key').disabled = !enabled;
+  const rde = document.getElementById('read_device_eui');
+  const wde = document.getElementById('write_device_eui');
+  const rae = document.getElementById('read_app_eui');
+  const wae = document.getElementById('write_app_eui');
+  const rak = document.getElementById('read_app_key');
+  const wak = document.getElementById('write_app_key');
+  const ide = document.getElementById('device_eui');
+  const iae = document.getElementById('app_eui');
+  const iak = document.getElementById('app_key');
+  if (rde) rde.disabled = !enabled;
+  if (wde) wde.disabled = !enabled;
+  if (rae) rae.disabled = !enabled;
+  if (wae) wae.disabled = !enabled;
+  if (rak) rak.disabled = !enabled;
+  if (wak) wak.disabled = !enabled;
+  if (ide) ide.disabled = !enabled;
+  if (iae) iae.disabled = !enabled;
+  if (iak) iak.disabled = !enabled;
   if (!enabled) {
-    document.getElementById('device_eui').value = '';
-    document.getElementById('app_eui').value = '';
-    document.getElementById('app_key').value = '';
+    if (ide) ide.value = '';
+    if (iae) iae.value = '';
+    if (iak) iak.value = '';
   }
 }
 
