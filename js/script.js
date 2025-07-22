@@ -134,7 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Diğer eski butonlar kaldırıldı
   loadAllSettings();
   updateTheme();
-  await updateAllPanels();
   setOtaaButtonsEnabled(false);
   const writeAllBtn = document.getElementById('write_all');
   const ide = document.getElementById('device_eui');
@@ -753,16 +752,6 @@ async function finishDrawing() {
 
 async function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function updateAllPanels() {
-  for (let panelId of activePanels) {
-    updatePanel(panelId);
-  }
-
-  // wait for frame to finish and request another frame
-  await finishDrawing();
-  await updateAllPanels();
 }
 
 function updatePanel(panelId) {
