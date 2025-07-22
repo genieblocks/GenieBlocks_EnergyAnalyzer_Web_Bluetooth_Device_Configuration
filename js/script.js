@@ -75,6 +75,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateTheme();
   await updateAllPanels();
   setOtaaButtonsEnabled(false);
+  const writeAllBtn = document.getElementById('write_all');
+  if (writeAllBtn) {
+    writeAllBtn.addEventListener('click', async () => {
+      await writeAll();
+    });
+  }
 });
 
 const boards = {
@@ -848,4 +854,35 @@ async function readValue(type) {
   }
 }
 
-// writeValue fonksiyonu kaldırıldı/disable edildi çünkü karakteristikler sadece read.
+async function writeAll() {
+  try {
+    if (!device || !device.gatt || !device.gatt.connected) throw 'Bluetooth bağlantısı yok.';
+    const SERVICE_UUID = '0000abcd-0000-1000-8000-00805f9b34fb';
+    const server = device.gatt.connected ? device.gatt : await device.gatt.connect();
+    const service = await server.getPrimaryService(SERVICE_UUID);
+    // Device EUI
+    let value = document.getElementById('device_eui').value.trim();
+    if (value.length !== 16) throw 'Device EUI 8 byte (16 hex karakter) olmalı.';
+    let buffer = new Uint8Array(8);
+    for (let i = 0; i < 8; i++) buffer[i] = parseInt(value.substr(i*2,2),16);
+    let char1 = await service.getCharacteristic('0000a001-0000-1000-8000-00805f9b34fb');
+    await char1.writeValue(buffer);
+    // APP EUI
+    value = document.getElementById('app_eui').value.trim();
+    if (value.length !== 16) throw 'APP EUI 8 byte (16 hex karakter) olmalı.';
+    buffer = new Uint8Array(8);
+    for (let i = 0; i < 8; i++) buffer[i] = parseInt(value.substr(i*2,2),16);
+    let char2 = await service.getCharacteristic('0000a002-0000-1000-8000-00805f9b34fb');
+    await char2.writeValue(buffer);
+    // APP Key
+    value = document.getElementById('app_key').value.trim();
+    if (value.length !== 32) throw 'APP Key 16 byte (32 hex karakter) olmalı.';
+    buffer = new Uint8Array(16);
+    for (let i = 0; i < 16; i++) buffer[i] = parseInt(value.substr(i*2,2),16);
+    let char3 = await service.getCharacteristic('0000a003-0000-1000-8000-00805f9b34fb');
+    await char3.writeValue(buffer);
+    logMsg('Tüm ayarlar başarıyla cihaza yazıldı.');
+  } catch (e) {
+    logMsg('Ayarlar yazılamadı: ' + e);
+  }
+}
