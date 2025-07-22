@@ -1,13 +1,13 @@
 # Versiyonlama ve GitHub'a Gönderme Kuralı (versiyonlama.mdc)
 
-**Güncel Versiyon:** v1.2.2
+**Güncel Versiyon:** v1.2.3
 
 ## Amaç
 Projede yapılan her anlamlı değişiklikten sonra, kod GitHub'a gönderilmeden önce uygulama versiyonu güncellenmelidir. Böylece canlıda ve repoda hangi sürümün çalıştığı kolayca takip edilebilir.
 
 ## Kural
-1. **Her commit öncesi:**
-   - `index.html` dosyasındaki `<div class="app-version">vX.Y.Z</div>` etiketi bir üst sürüme çıkarılır.
+1. **Her commit/push öncesi:**
+   - `index.html` dosyasındaki `<div class="app-version">vX.Y.Z</div>` satırındaki versiyon numarası bir üst sürüme çıkarılır. **Bu satır güncellenmeden hiçbir değişiklik GitHub'a gönderilmez.**
    - Sürüm numarası aşağıdaki gibi artırılır:
      - **X**: Büyük, geriye dönük uyumsuz değişiklikler (major)
      - **Y**: Yeni özellikler, geriye dönük uyumlu (minor)
@@ -26,7 +26,3 @@ Projede yapılan her anlamlı değişiklikten sonra, kod GitHub'a gönderilmeden
 
 ---
 **Bu dosya proje kök dizininde tutulmalı ve her geliştirici tarafından okunmalıdır.**
-description:
-globs:
-alwaysApply: false
----
