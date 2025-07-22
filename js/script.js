@@ -60,6 +60,7 @@ function setOtaaButtonsEnabled(enabled) {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  console.log('Sayfa yüklendi, debug aktif.');
     const notSupported = document.getElementById('notSupported');
   if (!('bluetooth' in navigator)) {
     notSupported.style.display = 'block';
