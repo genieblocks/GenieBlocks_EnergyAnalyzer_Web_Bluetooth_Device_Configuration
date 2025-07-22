@@ -158,8 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return warn;
   }
   if (writeAllBtn && ide && iae && iak) {
-    const checkInputs = () => {
-      console.log('checkInputs fonksiyonu çalıştı');
+    function checkInputs() {
       let valid = true;
       // Device EUI
       let v = ide ? ide.value.trim() : '';
@@ -207,18 +206,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         writeAllBtn.disabled = true;
       }
-    };
-    // Event listener eklemeden önce eski event'ları temizle
-    function removeAllInputListeners(input) {
-      const clone = input.cloneNode(true);
-      input.parentNode.replaceChild(clone, input);
-      return clone;
     }
-    // DOMContentLoaded veya setOtaaButtonsEnabled içinde:
-    // ide, iae, iak inputlarını removeAllInputListeners ile temizle, sonra event ekle
-    ide = removeAllInputListeners(ide);
-    iae = removeAllInputListeners(iae);
-    iak = removeAllInputListeners(iak);
+    const ide = document.getElementById('device_eui');
+    const iae = document.getElementById('app_eui');
+    const iak = document.getElementById('app_key');
+    const writeAllBtn = document.getElementById('write_all');
 
     ide.addEventListener('input', (e) => {
       let val = e.target.value;
@@ -237,6 +229,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       checkInputs();
     });
+
     iae.addEventListener('input', (e) => {
       let val = e.target.value;
       let filtered = val.replace(/[^0-9a-fA-F]/g, '');
@@ -254,6 +247,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       checkInputs();
     });
+
     iak.addEventListener('input', (e) => {
       let val = e.target.value;
       let filtered = val.replace(/[^0-9a-fA-F]/g, '');
@@ -271,12 +265,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       checkInputs();
     });
-    // setInterval(checkInputs, 500); // kaldırıldı, sadece input event ile kontrol
-    writeAllBtn.addEventListener('click', async () => {
-      await writeAll();
-      writeAllBtn.disabled = true;
-    });
-    // Sayfa yüklenince de ilk kontrolü yap
+
     checkInputs();
   }
 });
