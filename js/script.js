@@ -104,49 +104,50 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   if (writeAllBtn && ide && iae && iak) {
     const checkInputs = () => {
+      console.log('checkInputs tetiklendi');
       let valid = true;
       // Device EUI
-      let v = ide.value.trim();
-      let warn = ensureWarningSpan(ide);
-      console.log('Device EUI:', v, 'length:', v.length, 'hex:', /^[0-9a-fA-F]*$/.test(v));
+      let v = ide ? ide.value.trim() : '';
+      let warn = ide ? ensureWarningSpan(ide) : null;
+      console.log('Device EUI:', v, 'length:', v.length, 'hex:', /^[0-9a-fA-F]*$/.test(v), 'disabled:', ide ? ide.disabled : 'yok', 'DOM:', !!ide);
       if (!/^[0-9a-fA-F]*$/.test(v)) {
-        warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        if (warn) warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
         valid = false;
       } else if (v.length !== 16) {
-        warn.textContent = 'Tam 8 byte (16 hex karakter) girin.';
+        if (warn) warn.textContent = 'Tam 8 byte (16 hex karakter) girin.';
         valid = false;
       } else {
-        warn.textContent = '';
+        if (warn) warn.textContent = '';
       }
       // APP EUI
-      v = iae.value.trim();
-      warn = ensureWarningSpan(iae);
-      console.log('APP EUI:', v, 'length:', v.length, 'hex:', /^[0-9a-fA-F]*$/.test(v));
+      v = iae ? iae.value.trim() : '';
+      warn = iae ? ensureWarningSpan(iae) : null;
+      console.log('APP EUI:', v, 'length:', v.length, 'hex:', /^[0-9a-fA-F]*$/.test(v), 'disabled:', iae ? iae.disabled : 'yok', 'DOM:', !!iae);
       if (!/^[0-9a-fA-F]*$/.test(v)) {
-        warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        if (warn) warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
         valid = false;
       } else if (v.length !== 16) {
-        warn.textContent = 'Tam 8 byte (16 hex karakter) girin.';
+        if (warn) warn.textContent = 'Tam 8 byte (16 hex karakter) girin.';
         valid = false;
       } else {
-        warn.textContent = '';
+        if (warn) warn.textContent = '';
       }
       // APP Key
-      v = iak.value.trim();
-      warn = ensureWarningSpan(iak);
-      console.log('APP KEY:', v, 'length:', v.length, 'hex:', /^[0-9a-fA-F]*$/.test(v));
+      v = iak ? iak.value.trim() : '';
+      warn = iak ? ensureWarningSpan(iak) : null;
+      console.log('APP KEY:', v, 'length:', v.length, 'hex:', /^[0-9a-fA-F]*$/.test(v), 'disabled:', iak ? iak.disabled : 'yok', 'DOM:', !!iak);
       if (!/^[0-9a-fA-F]*$/.test(v)) {
-        warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        if (warn) warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
         valid = false;
       } else if (v.length !== 32) {
-        warn.textContent = 'Tam 16 byte (32 hex karakter) girin.';
+        if (warn) warn.textContent = 'Tam 16 byte (32 hex karakter) girin.';
         valid = false;
       } else {
-        warn.textContent = '';
+        if (warn) warn.textContent = '';
       }
       // Buton aktifliği
-      console.log('valid:', valid, 'disabled:', ide.disabled, iae.disabled, iak.disabled);
-      if (valid && !ide.disabled && !iae.disabled && !iak.disabled) {
+      console.log('valid:', valid, 'disabled:', ide ? ide.disabled : 'yok', iae ? iae.disabled : 'yok', iak ? iak.disabled : 'yok', 'writeAllBtn:', writeAllBtn ? writeAllBtn.disabled : 'yok');
+      if (valid && ide && iae && iak && !ide.disabled && !iae.disabled && !iak.disabled) {
         writeAllBtn.disabled = false;
       } else {
         writeAllBtn.disabled = true;
