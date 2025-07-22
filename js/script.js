@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   if (writeAllBtn && ide && iae && iak) {
     const checkInputs = () => {
-      console.log('checkInputs tetiklendi');
+      console.log('checkInputs fonksiyonu çalıştı');
       let valid = true;
       // Device EUI
       let v = ide ? ide.value.trim() : '';
@@ -154,9 +154,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         writeAllBtn.disabled = true;
       }
     };
-    ide.addEventListener('input', checkInputs);
-    iae.addEventListener('input', checkInputs);
-    iak.addEventListener('input', checkInputs);
+    ide.addEventListener('input', (e) => { console.log('device_eui input değişti:', e.target.value); checkInputs(); });
+    iae.addEventListener('input', (e) => { console.log('app_eui input değişti:', e.target.value); checkInputs(); });
+    iak.addEventListener('input', (e) => { console.log('app_key input değişti:', e.target.value); checkInputs(); });
     // setInterval(checkInputs, 500); // kaldırıldı, sadece input event ile kontrol
     writeAllBtn.addEventListener('click', async () => {
       await writeAll();
