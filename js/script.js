@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   if (window.Inputmask) {
     Inputmask({
-      mask: "[AAAAAAAAAAAAAAAA]", // 16 karakter için
+      mask: "AAAAAAAAAAAAAAAA", // 16 karakter, sadece hex
       definitions: {
         'A': {
           validator: "[0-9a-fA-F]",
@@ -365,7 +365,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       placeholder: ""
     }).mask('#device_eui');
     Inputmask({
-      mask: "[AAAAAAAAAAAAAAAA]", // 16 karakter için
+      mask: "AAAAAAAAAAAAAAAA", // 16 karakter, sadece hex
       definitions: {
         'A': {
           validator: "[0-9a-fA-F]",
@@ -375,7 +375,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       placeholder: ""
     }).mask('#app_eui');
     Inputmask({
-      mask: "[AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA]", // 32 karakter için
+      mask: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", // 32 karakter, sadece hex
       definitions: {
         'A': {
           validator: "[0-9a-fA-F]",
@@ -385,6 +385,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       placeholder: ""
     }).mask('#app_key');
     console.log('Inputmask ile hexadecimal input maskeleri uygulandı.');
+    // Her input değişikliğinde konsola yaz
+    document.getElementById('device_eui').addEventListener('input', (e) => {
+      console.log('Device EUI input:', e.target.value);
+    });
+    document.getElementById('app_eui').addEventListener('input', (e) => {
+      console.log('APP EUI input:', e.target.value);
+    });
+    document.getElementById('app_key').addEventListener('input', (e) => {
+      console.log('APP KEY input:', e.target.value);
+    });
   } else {
     console.warn('Inputmask kütüphanesi yüklenemedi!');
   }
