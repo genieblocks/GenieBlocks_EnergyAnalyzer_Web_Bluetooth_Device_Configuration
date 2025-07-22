@@ -209,6 +209,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     };
     ide.addEventListener('input', (e) => {
+      let val = e.target.value;
+      let filtered = val.replace(/[^0-9a-fA-F]/g, '');
+      if (val !== filtered) {
+        e.target.value = filtered;
+        ensureWarningSpan(ide).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+      }
       if (e.target.value.length > 16) {
         e.target.value = e.target.value.slice(0, 16);
         ensureWarningSpan(ide).textContent = 'En fazla 16 karakter girebilirsiniz.';
@@ -216,6 +222,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       checkInputs();
     });
     iae.addEventListener('input', (e) => {
+      let val = e.target.value;
+      let filtered = val.replace(/[^0-9a-fA-F]/g, '');
+      if (val !== filtered) {
+        e.target.value = filtered;
+        ensureWarningSpan(iae).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+      }
       if (e.target.value.length > 16) {
         e.target.value = e.target.value.slice(0, 16);
         ensureWarningSpan(iae).textContent = 'En fazla 16 karakter girebilirsiniz.';
@@ -223,6 +235,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       checkInputs();
     });
     iak.addEventListener('input', (e) => {
+      let val = e.target.value;
+      let filtered = val.replace(/[^0-9a-fA-F]/g, '');
+      if (val !== filtered) {
+        e.target.value = filtered;
+        ensureWarningSpan(iak).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+      }
       if (e.target.value.length > 32) {
         e.target.value = e.target.value.slice(0, 32);
         ensureWarningSpan(iak).textContent = 'En fazla 32 karakter girebilirsiniz.';
