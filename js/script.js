@@ -259,6 +259,13 @@ async function clickConnect() {
   if (device && device.gatt && device.gatt.connected) {
     await disconnect();
     toggleUIConnected(false);
+    // Bağlantı kesilince inputları disable ve temizle
+    [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
+      if (input) {
+        input.value = '';
+        input.disabled = true;
+      }
+    });
     return;
   }
   butConnect.textContent = 'Bağlanıyor...';
@@ -270,13 +277,27 @@ async function clickConnect() {
       await readValue('device_eui');
       await readValue('app_eui');
       await readValue('app_key');
+      // Veriler geldikten sonra inputları enable yap
+      [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
+        if (input) input.disabled = false;
+      });
     } catch (e) {
       logMsg('Bağlantı kuruldu fakat cihazdan veri okunamadı: ' + e);
-      setOtaaButtonsEnabled(false);
+      [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
+        if (input) {
+          input.value = '';
+          input.disabled = true;
+        }
+      });
     }
   } catch (e) {
-    setOtaaButtonsEnabled(false);
     logMsg('Bluetooth cihazı bulunamadı veya bağlantı reddedildi.');
+    [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
+      if (input) {
+        input.value = '';
+        input.disabled = true;
+      }
+    });
   }
   butConnect.textContent = device && device.gatt && device.gatt.connected ? 'Bağlantıyı Kes' : 'Cihaza Bağlan';
 }
@@ -299,6 +320,13 @@ async function onDisconnected(event) {
   device = undefined;
   currentBoard = undefined;
   setOtaaButtonsEnabled(false);
+  // Bağlantı kesilince inputları disable ve temizle
+  [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
+    if (input) {
+      input.value = '';
+      input.disabled = true;
+    }
+  });
 }
 
 /**
