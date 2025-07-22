@@ -7,14 +7,16 @@ Projede yapılan her anlamlı değişiklikten sonra, kod GitHub'a gönderilmeden
 
 ## Kural
 1. **Her commit/push öncesi:**
-   - `index.html` dosyasındaki `<div class="app-version">vX.Y.Z</div>` satırındaki versiyon numarası bir üst sürüme çıkarılır. **Bu satır güncellenmeden hiçbir değişiklik GitHub'a gönderilmez.**
+   - `index.html` dosyasındaki `<div class="app-version">vX.Y.Z</div>` satırındaki versiyon numarası bir üst sürüme çıkarılmalıdır. **Bu satır güncellenmeden hiçbir değişiklik GitHub'a gönderilemez.**
+   - Kodda yapılan her değişiklikte, versiyon numarası artırılmalı ve commit mesajında bu yeni versiyon açıkça belirtilmelidir.
+   - Versiyon güncellenmeden yapılan push'lar geçersiz sayılır ve geri alınmalıdır.
    - Sürüm numarası aşağıdaki gibi artırılır:
      - **X**: Büyük, geriye dönük uyumsuz değişiklikler (major)
      - **Y**: Yeni özellikler, geriye dönük uyumlu (minor)
      - **Z**: Hata düzeltmeleri, küçük iyileştirmeler (patch)
 2. **Commit mesajı:**
    - Commit mesajında yeni versiyon ve özet değişiklik mutlaka belirtilir.
-   - Örnek: `v1.2.1: Yaz butonu debug logları eklendi, input validasyon adımları konsola yazılıyor`
+   - Örnek: `v1.2.4: Yaz butonu debug logları geliştirildi, input event ve validasyon logları konsola yazılıyor`
 3. **GitHub'a gönderme:**
    - Versiyon güncellemesi yapılmadan hiçbir değişiklik GitHub'a gönderilmez.
    - Versiyon etiketi ve commit mesajı ile birlikte push edilir.
