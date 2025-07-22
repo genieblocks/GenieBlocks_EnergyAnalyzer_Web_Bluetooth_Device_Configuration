@@ -43,10 +43,15 @@ function setOtaaButtonsEnabled(enabled) {
   document.getElementById('device_eui').disabled = !enabled;
   document.getElementById('app_eui').disabled = !enabled;
   document.getElementById('app_key').disabled = !enabled;
+  if (!enabled) {
+    document.getElementById('device_eui').value = '';
+    document.getElementById('app_eui').value = '';
+    document.getElementById('app_key').value = '';
+  }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const notSupported = document.getElementById('notSupported');
+    const notSupported = document.getElementById('notSupported');
   if (!('bluetooth' in navigator)) {
     notSupported.style.display = 'block';
   } else {
@@ -155,8 +160,8 @@ function encodePacket(panelId, values) {
 async function connect() {
   try {
     logMsg('Bluetooth cihazları aranıyor...');
-    device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
+      device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
       optionalServices: [
         '0000abcd-0000-1000-8000-00805f9b34fb'
       ]
