@@ -110,7 +110,7 @@ function setOtaaButtonsEnabled(enabled) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
   console.log('Sayfa yüklendi, debug aktif.');
     const notSupported = document.getElementById('notSupported');
   if (!('bluetooth' in navigator)) {
@@ -391,7 +391,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   } else {
     console.warn('imaskjs kütüphanesi yüklenemedi!');
   }
-}); // Tüm eski input event ve validasyon fonksiyonları kaldırıldı
+});
 
 const boards = {
   GB_LoRa: {
