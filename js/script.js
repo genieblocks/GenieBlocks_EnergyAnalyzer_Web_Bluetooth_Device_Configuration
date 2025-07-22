@@ -878,6 +878,18 @@ document.addEventListener('DOMContentLoaded', () => {
   if (butConnect && typeof clickConnect === 'function') {
     butConnect.addEventListener('click', clickConnect);
   }
+  // Logu Göster/Gizle butonu
+  const toggleLog = document.getElementById('toggleLog');
+  const logArea = document.getElementById('log');
+  if (toggleLog && logArea) {
+    toggleLog.addEventListener('click', () => {
+      if (logArea.style.display === 'block') {
+        logArea.style.display = 'none';
+      } else {
+        logArea.style.display = 'block';
+      }
+    });
+  }
   console.log('Sadece hex karakter ve max uzunluk için keyup event ile kontrol aktif.');
 });
 
