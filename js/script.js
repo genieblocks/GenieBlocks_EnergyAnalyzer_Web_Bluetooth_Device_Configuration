@@ -212,83 +212,144 @@ document.addEventListener('DOMContentLoaded', async () => {
     const iak = document.getElementById('app_key');
     const writeAllBtn = document.getElementById('write_all');
 
+    // Hexadecimal karakter kontrolü için yardımcı fonksiyonlar
     function isHexChar(char) {
       return /^[0-9a-fA-F]$/.test(char);
     }
 
-    function filterHexInput(e, maxLen, label) {
+    function isValidHexString(str) {
+      return /^[0-9a-fA-F]*$/.test(str);
+    }
+
+    // Debug log fonksiyonu
+    function debugLog(label, event, value, action) {
+      console.log(`[DEBUG] ${label} - Event: ${event}, Value: ${value}, Action: ${action}`);
+      console.log('Current element state:', {
+        id: event.target.id,
+        value: event.target.value,
+        disabled: event.target.disabled,
+        maxLength: event.target.maxLength
+      });
+    }
+
+    // Input kontrolü için ana fonksiyonlar
+    function handleBeforeInput(e, maxLen, label) {
+      debugLog(label, 'beforeinput', e.data, 'checking');
+      
+      // insertText olayında
+      if (e.inputType === 'insertText') {
+        if (!isHexChar(e.data)) {
+          e.preventDefault();
+          ensureWarningSpan(e.target).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+          debugLog(label, 'beforeinput', e.data, 'blocked-invalid-char');
+          return;
+        }
+        
+        // Maksimum uzunluk kontrolü
+        if (e.target.value.length >= maxLen && window.getSelection().toString() === '') {
+          e.preventDefault();
+          ensureWarningSpan(e.target).textContent = `En fazla ${maxLen} karakter girebilirsiniz.`;
+          debugLog(label, 'beforeinput', e.data, 'blocked-max-length');
+          return;
+        }
+      }
+      
+      // insertFromPaste olayında
+      if (e.inputType === 'insertFromPaste') {
+        const pastedData = e.dataTransfer?.getData('text') || e.data;
+        if (!isValidHexString(pastedData)) {
+          e.preventDefault();
+          ensureWarningSpan(e.target).textContent = 'Sadece hexadecimal karakter yapıştırılabilir (0-9, A-F).';
+          debugLog(label, 'beforeinput', pastedData, 'blocked-invalid-paste');
+          return;
+        }
+        
+        if ((e.target.value.length + pastedData.length) > maxLen) {
+          e.preventDefault();
+          ensureWarningSpan(e.target).textContent = `En fazla ${maxLen} karakter girebilirsiniz.`;
+          debugLog(label, 'beforeinput', pastedData, 'blocked-paste-max-length');
+          return;
+        }
+      }
+    }
+
+    function handleInput(e, maxLen, label) {
       let val = e.target.value;
+      debugLog(label, 'input', val, 'processing');
+      
+      // Hexadecimal olmayan karakterleri temizle
       let filtered = val.replace(/[^0-9a-fA-F]/g, '');
-      let warn = ensureWarningSpan(e.target);
+      
       if (val !== filtered) {
         e.target.value = filtered;
-        warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
-        console.log(label + ' (input): Geçersiz karakter(ler) temizlendi:', val);
-      } else if (filtered.length > maxLen) {
-        e.target.value = filtered.slice(0, maxLen);
-        warn.textContent = 'En fazla ' + maxLen + ' karakter girebilirsiniz.';
-        console.log(label + ' (input): Fazla karakter temizlendi:', filtered);
-      } else {
-        warn.textContent = '';
+        ensureWarningSpan(e.target).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        debugLog(label, 'input', val, 'cleaned-invalid-chars');
       }
+      
+      // Maksimum uzunluk kontrolü
+      if (filtered.length > maxLen) {
+        e.target.value = filtered.slice(0, maxLen);
+        ensureWarningSpan(e.target).textContent = `En fazla ${maxLen} karakter girebilirsiniz.`;
+        debugLog(label, 'input', filtered, 'trimmed-max-length');
+      }
+      
+      if (val === filtered && filtered.length <= maxLen) {
+        ensureWarningSpan(e.target).textContent = '';
+        debugLog(label, 'input', filtered, 'valid-input');
+      }
+      
       checkInputs();
     }
 
-    function handleHexKeydown(e, maxLen, label) {
-      if (e.ctrlKey || e.metaKey || e.altKey) return;
-      if (e.key.length === 1 && !isHexChar(e.key)) {
-        e.preventDefault();
-        ensureWarningSpan(e.target).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
-        console.log(label + ' (keydown): Geçersiz karakter engellendi:', e.key);
-      }
-      // Maksimum uzunluk kontrolü
-      if (e.target.value.length >= maxLen && e.key.length === 1 && isHexChar(e.key) && window.getSelection().toString() === '') {
-        e.preventDefault();
-        ensureWarningSpan(e.target).textContent = 'En fazla ' + maxLen + ' karakter girebilirsiniz.';
-        console.log(label + ' (keydown): Fazla karakter engellendi:', e.key);
-      }
+    function handleCompositionStart(e, label) {
+      debugLog(label, 'compositionstart', e.data, 'started');
+      e.target.setAttribute('data-composing', 'true');
     }
 
-    function handleHexPaste(e, maxLen, label) {
-      let paste = (e.clipboardData || window.clipboardData).getData('text');
-      if (!/^[0-9a-fA-F]*$/.test(paste)) {
-        e.preventDefault();
-        ensureWarningSpan(e.target).textContent = 'Sadece hexadecimal karakter yapıştırılabilir (0-9, A-F).';
-        console.log(label + ' (paste): Geçersiz karakter(ler) yapıştırma engellendi:', paste);
-      } else if ((e.target.value.length + paste.length) > maxLen) {
-        e.preventDefault();
-        ensureWarningSpan(e.target).textContent = 'En fazla ' + maxLen + ' karakter girebilirsiniz.';
-        console.log(label + ' (paste): Fazla karakter yapıştırma engellendi:', paste);
-      }
+    function handleCompositionEnd(e, label) {
+      debugLog(label, 'compositionend', e.data, 'ended');
+      e.target.removeAttribute('data-composing');
+      handleInput(e, e.target.maxLength, label);
     }
 
-    function handleHexDrop(e, maxLen, label) {
-      let data = e.dataTransfer.getData('text');
-      if (!/^[0-9a-fA-F]*$/.test(data)) {
-        e.preventDefault();
-        ensureWarningSpan(e.target).textContent = 'Sadece hexadecimal karakter bırakılabilir (0-9, A-F).';
-        console.log(label + ' (drop): Geçersiz karakter(ler) bırakma engellendi:', data);
-      } else if ((e.target.value.length + data.length) > maxLen) {
-        e.preventDefault();
-        ensureWarningSpan(e.target).textContent = 'En fazla ' + maxLen + ' karakter girebilirsiniz.';
-        console.log(label + ' (drop): Fazla karakter bırakma engellendi:', data);
-      }
-    }
-
-    ide.addEventListener('keydown', (e) => handleHexKeydown(e, 16, 'Device EUI'));
-    ide.addEventListener('input', (e) => filterHexInput(e, 16, 'Device EUI'));
-    ide.addEventListener('paste', (e) => handleHexPaste(e, 16, 'Device EUI'));
-    ide.addEventListener('drop', (e) => handleHexDrop(e, 16, 'Device EUI'));
-
-    iae.addEventListener('keydown', (e) => handleHexKeydown(e, 16, 'APP EUI'));
-    iae.addEventListener('input', (e) => filterHexInput(e, 16, 'APP EUI'));
-    iae.addEventListener('paste', (e) => handleHexPaste(e, 16, 'APP EUI'));
-    iae.addEventListener('drop', (e) => handleHexDrop(e, 16, 'APP EUI'));
-
-    iak.addEventListener('keydown', (e) => handleHexKeydown(e, 32, 'APP KEY'));
-    iak.addEventListener('input', (e) => filterHexInput(e, 32, 'APP KEY'));
-    iak.addEventListener('paste', (e) => handleHexPaste(e, 32, 'APP KEY'));
-    iak.addEventListener('drop', (e) => handleHexDrop(e, 32, 'APP KEY'));
+    // Event listener'ları ekle
+    [
+      { element: ide, maxLen: 16, label: 'Device EUI' },
+      { element: iae, maxLen: 16, label: 'APP EUI' },
+      { element: iak, maxLen: 32, label: 'APP KEY' }
+    ].forEach(({ element, maxLen, label }) => {
+      // IME girişi için composition event'ları
+      element.addEventListener('compositionstart', (e) => handleCompositionStart(e, label));
+      element.addEventListener('compositionend', (e) => handleCompositionEnd(e, label));
+      
+      // Karakter girişi öncesi kontrol
+      element.addEventListener('beforeinput', (e) => handleBeforeInput(e, maxLen, label));
+      
+      // Input değişikliği kontrolü
+      element.addEventListener('input', (e) => {
+        if (e.target.getAttribute('data-composing')) return;
+        handleInput(e, maxLen, label);
+      });
+      
+      // Yapıştırma kontrolü
+      element.addEventListener('paste', (e) => {
+        const pastedData = e.clipboardData.getData('text');
+        debugLog(label, 'paste', pastedData, 'checking');
+        
+        if (!isValidHexString(pastedData)) {
+          e.preventDefault();
+          ensureWarningSpan(e.target).textContent = 'Sadece hexadecimal karakter yapıştırılabilir (0-9, A-F).';
+          debugLog(label, 'paste', pastedData, 'blocked-invalid-paste');
+          return;
+        }
+        
+        if ((e.target.value.length + pastedData.length) > maxLen) {
+          e.preventDefault();
+          ensureWarningSpan(e.target).textContent = `En fazla ${maxLen} karakter girebilirsiniz.`;
+          debugLog(label, 'paste', pastedData, 'blocked-paste-max-length');
+        }
+      });
+    });
 
     checkInputs();
   }
