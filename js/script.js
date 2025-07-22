@@ -353,50 +353,43 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     checkInputs();
   }
-  if (window.Inputmask) {
-    Inputmask({
-      mask: "AAAAAAAAAAAAAAAA", // 16 karakter, sadece hex
-      definitions: {
-        'A': {
-          validator: "[0-9a-fA-F]",
-          casing: "upper"
-        }
-      },
-      placeholder: ""
-    }).mask('#device_eui');
-    Inputmask({
-      mask: "AAAAAAAAAAAAAAAA", // 16 karakter, sadece hex
-      definitions: {
-        'A': {
-          validator: "[0-9a-fA-F]",
-          casing: "upper"
-        }
-      },
-      placeholder: ""
-    }).mask('#app_eui');
-    Inputmask({
-      mask: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", // 32 karakter, sadece hex
-      definitions: {
-        'A': {
-          validator: "[0-9a-fA-F]",
-          casing: "upper"
-        }
-      },
-      placeholder: ""
-    }).mask('#app_key');
-    console.log('Inputmask ile hexadecimal input maskeleri uygulandı.');
-    // Her input değişikliğinde konsola yaz
-    document.getElementById('device_eui').addEventListener('input', (e) => {
-      console.log('Device EUI input:', e.target.value);
+  if (window.IMask) {
+    const deviceEuiMask = IMask(
+      document.getElementById('device_eui'),
+      {
+        mask: /^[0-9a-fA-F]{0,16}$/,
+        prepare: (str) => str.toUpperCase(),
+        validate: (str) => /^[0-9A-F]{0,16}$/.test(str)
+      }
+    );
+    const appEuiMask = IMask(
+      document.getElementById('app_eui'),
+      {
+        mask: /^[0-9a-fA-F]{0,16}$/,
+        prepare: (str) => str.toUpperCase(),
+        validate: (str) => /^[0-9A-F]{0,16}$/.test(str)
+      }
+    );
+    const appKeyMask = IMask(
+      document.getElementById('app_key'),
+      {
+        mask: /^[0-9a-fA-F]{0,32}$/,
+        prepare: (str) => str.toUpperCase(),
+        validate: (str) => /^[0-9A-F]{0,32}$/.test(str)
+      }
+    );
+    deviceEuiMask.on('accept', () => {
+      console.log('Device EUI input:', deviceEuiMask.value);
     });
-    document.getElementById('app_eui').addEventListener('input', (e) => {
-      console.log('APP EUI input:', e.target.value);
+    appEuiMask.on('accept', () => {
+      console.log('APP EUI input:', appEuiMask.value);
     });
-    document.getElementById('app_key').addEventListener('input', (e) => {
-      console.log('APP KEY input:', e.target.value);
+    appKeyMask.on('accept', () => {
+      console.log('APP KEY input:', appKeyMask.value);
     });
+    console.log('imaskjs ile hexadecimal input maskeleri uygulandı.');
   } else {
-    console.warn('Inputmask kütüphanesi yüklenemedi!');
+    console.warn('imaskjs kütüphanesi yüklenemedi!');
   }
 });
 
