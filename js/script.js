@@ -907,7 +907,7 @@ if (writeAllBtn) {
       alert(msg);
       return;
     }
-    // Burada normalde writeAll fonksiyonu çağrılır
+    // Bluetooth üzerinden gerekli bilgileri gönder
     writeAll();
   });
 }
