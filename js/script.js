@@ -208,6 +208,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         writeAllBtn.disabled = true;
       }
     };
+    // Event listener eklemeden önce eski event'ları temizle
+    function removeAllInputListeners(input) {
+      const clone = input.cloneNode(true);
+      input.parentNode.replaceChild(clone, input);
+      return clone;
+    }
+    // DOMContentLoaded veya setOtaaButtonsEnabled içinde:
+    // ide, iae, iak inputlarını removeAllInputListeners ile temizle, sonra event ekle
+    ide = removeAllInputListeners(ide);
+    iae = removeAllInputListeners(iae);
+    iak = removeAllInputListeners(iak);
+
     ide.addEventListener('input', (e) => {
       let val = e.target.value;
       let filtered = val.replace(/[^0-9a-fA-F]/g, '');
