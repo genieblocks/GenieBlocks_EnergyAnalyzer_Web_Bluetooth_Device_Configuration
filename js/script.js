@@ -140,6 +140,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const ide = document.getElementById('device_eui');
   const iae = document.getElementById('app_eui');
   const iak = document.getElementById('app_key');
+  if (ide) ide.setAttribute('maxlength', '16');
+  if (iae) iae.setAttribute('maxlength', '16');
+  if (iak) iak.setAttribute('maxlength', '32');
   // Uyarı mesajları için alanlar ekle
   function ensureWarningSpan(input) {
     let warn = input.nextElementSibling;
@@ -205,9 +208,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         writeAllBtn.disabled = true;
       }
     };
-    ide.addEventListener('input', (e) => { console.log('device_eui input değişti:', e.target.value); checkInputs(); });
-    iae.addEventListener('input', (e) => { console.log('app_eui input değişti:', e.target.value); checkInputs(); });
-    iak.addEventListener('input', (e) => { console.log('app_key input değişti:', e.target.value); checkInputs(); });
+    ide.addEventListener('input', (e) => {
+      if (e.target.value.length > 16) {
+        e.target.value = e.target.value.slice(0, 16);
+        ensureWarningSpan(ide).textContent = 'En fazla 16 karakter girebilirsiniz.';
+      }
+      checkInputs();
+    });
+    iae.addEventListener('input', (e) => {
+      if (e.target.value.length > 16) {
+        e.target.value = e.target.value.slice(0, 16);
+        ensureWarningSpan(iae).textContent = 'En fazla 16 karakter girebilirsiniz.';
+      }
+      checkInputs();
+    });
+    iak.addEventListener('input', (e) => {
+      if (e.target.value.length > 32) {
+        e.target.value = e.target.value.slice(0, 32);
+        ensureWarningSpan(iak).textContent = 'En fazla 32 karakter girebilirsiniz.';
+      }
+      checkInputs();
+    });
     // setInterval(checkInputs, 500); // kaldırıldı, sadece input event ile kontrol
     writeAllBtn.addEventListener('click', async () => {
       await writeAll();
