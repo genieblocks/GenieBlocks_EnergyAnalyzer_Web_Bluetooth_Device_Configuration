@@ -259,13 +259,13 @@ async function clickConnect() {
   if (device && device.gatt && device.gatt.connected) {
     await disconnect();
     toggleUIConnected(false);
-    // Bağlantı kesilince inputları disable ve temizle
     [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
       if (input) {
         input.value = '';
         input.disabled = true;
       }
     });
+    document.getElementById('write_all').disabled = true;
     return;
   }
   butConnect.textContent = 'Bağlanıyor...';
@@ -277,10 +277,10 @@ async function clickConnect() {
       await readValue('device_eui');
       await readValue('app_eui');
       await readValue('app_key');
-      // Veriler geldikten sonra inputları enable yap
       [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
         if (input) input.disabled = false;
       });
+      document.getElementById('write_all').disabled = false;
     } catch (e) {
       logMsg('Bağlantı kuruldu fakat cihazdan veri okunamadı: ' + e);
       [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
@@ -289,6 +289,7 @@ async function clickConnect() {
           input.disabled = true;
         }
       });
+      document.getElementById('write_all').disabled = true;
     }
   } catch (e) {
     logMsg('Bluetooth cihazı bulunamadı veya bağlantı reddedildi.');
@@ -298,6 +299,7 @@ async function clickConnect() {
         input.disabled = true;
       }
     });
+    document.getElementById('write_all').disabled = true;
   }
   butConnect.textContent = device && device.gatt && device.gatt.connected ? 'Bağlantıyı Kes' : 'Cihaza Bağlan';
 }
@@ -878,3 +880,34 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   console.log('Sadece hex karakter ve max uzunluk için keyup event ile kontrol aktif.');
 });
+
+// Yaz butonuna basıldığında inputlarda eksik karakter varsa uyarı göster
+const writeAllBtn = document.getElementById('write_all');
+if (writeAllBtn) {
+  writeAllBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const ide = document.getElementById('device_eui');
+    const iae = document.getElementById('app_eui');
+    const iak = document.getElementById('app_key');
+    let valid = true;
+    let msg = '';
+    if (!ide.value || ide.value.length !== 16) {
+      valid = false;
+      msg += 'Device EUI alanı tam 16 karakter olmalı.\n';
+    }
+    if (!iae.value || iae.value.length !== 16) {
+      valid = false;
+      msg += 'APP EUI alanı tam 16 karakter olmalı.\n';
+    }
+    if (!iak.value || iak.value.length !== 32) {
+      valid = false;
+      msg += 'APP KEY alanı tam 32 karakter olmalı.';
+    }
+    if (!valid) {
+      alert(msg);
+      return;
+    }
+    // Burada normalde writeAll fonksiyonu çağrılır
+    writeAll();
+  });
+}
