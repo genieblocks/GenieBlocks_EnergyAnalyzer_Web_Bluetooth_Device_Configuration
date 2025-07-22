@@ -156,11 +156,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     ide.addEventListener('input', checkInputs);
     iae.addEventListener('input', checkInputs);
     iak.addEventListener('input', checkInputs);
-    setInterval(checkInputs, 500);
+    // setInterval(checkInputs, 500); // kaldırıldı, sadece input event ile kontrol
     writeAllBtn.addEventListener('click', async () => {
       await writeAll();
       writeAllBtn.disabled = true;
     });
+    // Sayfa yüklenince de ilk kontrolü yap
+    checkInputs();
   }
 });
 
