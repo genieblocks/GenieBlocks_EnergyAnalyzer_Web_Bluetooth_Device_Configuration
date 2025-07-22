@@ -1,5 +1,7 @@
 # Versiyonlama ve GitHub'a Gönderme Kuralı (versiyonlama.mdc)
 
+**Güncel Versiyon:** v1.2.2
+
 ## Amaç
 Projede yapılan her anlamlı değişiklikten sonra, kod GitHub'a gönderilmeden önce uygulama versiyonu güncellenmelidir. Böylece canlıda ve repoda hangi sürümün çalıştığı kolayca takip edilebilir.
 
