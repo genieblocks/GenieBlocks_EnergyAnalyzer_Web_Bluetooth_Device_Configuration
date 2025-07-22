@@ -85,9 +85,76 @@ document.addEventListener('DOMContentLoaded', async () => {
   await updateAllPanels();
   setOtaaButtonsEnabled(false);
   const writeAllBtn = document.getElementById('write_all');
-  if (writeAllBtn) {
+  const ide = document.getElementById('device_eui');
+  const iae = document.getElementById('app_eui');
+  const iak = document.getElementById('app_key');
+  // Uyarı mesajları için alanlar ekle
+  function ensureWarningSpan(input) {
+    let warn = input.nextElementSibling;
+    if (!warn || !warn.classList || !warn.classList.contains('input-warning')) {
+      warn = document.createElement('span');
+      warn.className = 'input-warning';
+      warn.style.display = 'block';
+      warn.style.color = '#c41c1c';
+      warn.style.fontSize = '0.95em';
+      warn.style.marginTop = '2px';
+      input.parentNode.insertBefore(warn, input.nextSibling);
+    }
+    return warn;
+  }
+  if (writeAllBtn && ide && iae && iak) {
+    const checkInputs = () => {
+      let valid = true;
+      // Device EUI
+      let v = ide.value.trim();
+      let warn = ensureWarningSpan(ide);
+      if (!/^[0-9a-fA-F]*$/.test(v)) {
+        warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        valid = false;
+      } else if (v.length !== 16) {
+        warn.textContent = 'Tam 8 byte (16 hex karakter) girin.';
+        valid = false;
+      } else {
+        warn.textContent = '';
+      }
+      // APP EUI
+      v = iae.value.trim();
+      warn = ensureWarningSpan(iae);
+      if (!/^[0-9a-fA-F]*$/.test(v)) {
+        warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        valid = false;
+      } else if (v.length !== 16) {
+        warn.textContent = 'Tam 8 byte (16 hex karakter) girin.';
+        valid = false;
+      } else {
+        warn.textContent = '';
+      }
+      // APP Key
+      v = iak.value.trim();
+      warn = ensureWarningSpan(iak);
+      if (!/^[0-9a-fA-F]*$/.test(v)) {
+        warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        valid = false;
+      } else if (v.length !== 32) {
+        warn.textContent = 'Tam 16 byte (32 hex karakter) girin.';
+        valid = false;
+      } else {
+        warn.textContent = '';
+      }
+      // Buton aktifliği
+      if (valid && !ide.disabled && !iae.disabled && !iak.disabled) {
+        writeAllBtn.disabled = false;
+      } else {
+        writeAllBtn.disabled = true;
+      }
+    };
+    ide.addEventListener('input', checkInputs);
+    iae.addEventListener('input', checkInputs);
+    iak.addEventListener('input', checkInputs);
+    setInterval(checkInputs, 500);
     writeAllBtn.addEventListener('click', async () => {
       await writeAll();
+      writeAllBtn.disabled = true;
     });
   }
 });
