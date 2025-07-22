@@ -353,6 +353,41 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     checkInputs();
   }
+  if (window.Inputmask) {
+    Inputmask({
+      mask: "[AAAAAAAAAAAAAAAA]", // 16 karakter için
+      definitions: {
+        'A': {
+          validator: "[0-9a-fA-F]",
+          casing: "upper"
+        }
+      },
+      placeholder: ""
+    }).mask('#device_eui');
+    Inputmask({
+      mask: "[AAAAAAAAAAAAAAAA]", // 16 karakter için
+      definitions: {
+        'A': {
+          validator: "[0-9a-fA-F]",
+          casing: "upper"
+        }
+      },
+      placeholder: ""
+    }).mask('#app_eui');
+    Inputmask({
+      mask: "[AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA]", // 32 karakter için
+      definitions: {
+        'A': {
+          validator: "[0-9a-fA-F]",
+          casing: "upper"
+        }
+      },
+      placeholder: ""
+    }).mask('#app_key');
+    console.log('Inputmask ile hexadecimal input maskeleri uygulandı.');
+  } else {
+    console.warn('Inputmask kütüphanesi yüklenemedi!');
+  }
 });
 
 const boards = {
