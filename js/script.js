@@ -212,6 +212,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const iak = document.getElementById('app_key');
     const writeAllBtn = document.getElementById('write_all');
 
+    ide.addEventListener('keydown', (e) => {
+      if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1 && !/[0-9a-fA-F]/.test(e.key)) {
+        e.preventDefault();
+        ensureWarningSpan(ide).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        console.log('Device EUI alanına geçersiz karakter (keydown) girildi:', e.key);
+      }
+    });
     ide.addEventListener('input', (e) => {
       let val = e.target.value;
       let filtered = val.replace(/[^0-9a-fA-F]/g, '');
@@ -219,7 +226,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (val !== filtered) {
         e.target.value = filtered;
         warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
-        console.log('Device EUI alanına geçersiz karakter girildi:', val);
+        console.log('Device EUI alanına geçersiz karakter (input) girildi:', val);
       } else if (filtered.length > 16) {
         e.target.value = filtered.slice(0, 16);
         warn.textContent = 'En fazla 16 karakter girebilirsiniz.';
@@ -230,6 +237,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       checkInputs();
     });
 
+    iae.addEventListener('keydown', (e) => {
+      if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1 && !/[0-9a-fA-F]/.test(e.key)) {
+        e.preventDefault();
+        ensureWarningSpan(iae).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        console.log('APP EUI alanına geçersiz karakter (keydown) girildi:', e.key);
+      }
+    });
     iae.addEventListener('input', (e) => {
       let val = e.target.value;
       let filtered = val.replace(/[^0-9a-fA-F]/g, '');
@@ -237,7 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (val !== filtered) {
         e.target.value = filtered;
         warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
-        console.log('APP EUI alanına geçersiz karakter girildi:', val);
+        console.log('APP EUI alanına geçersiz karakter (input) girildi:', val);
       } else if (filtered.length > 16) {
         e.target.value = filtered.slice(0, 16);
         warn.textContent = 'En fazla 16 karakter girebilirsiniz.';
@@ -248,6 +262,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       checkInputs();
     });
 
+    iak.addEventListener('keydown', (e) => {
+      if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1 && !/[0-9a-fA-F]/.test(e.key)) {
+        e.preventDefault();
+        ensureWarningSpan(iak).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        console.log('APP KEY alanına geçersiz karakter (keydown) girildi:', e.key);
+      }
+    });
     iak.addEventListener('input', (e) => {
       let val = e.target.value;
       let filtered = val.replace(/[^0-9a-fA-F]/g, '');
@@ -255,7 +276,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (val !== filtered) {
         e.target.value = filtered;
         warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
-        console.log('APP KEY alanına geçersiz karakter girildi:', val);
+        console.log('APP KEY alanına geçersiz karakter (input) girildi:', val);
       } else if (filtered.length > 32) {
         e.target.value = filtered.slice(0, 32);
         warn.textContent = 'En fazla 32 karakter girebilirsiniz.';
