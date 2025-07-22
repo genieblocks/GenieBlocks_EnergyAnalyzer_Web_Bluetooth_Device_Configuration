@@ -212,80 +212,83 @@ document.addEventListener('DOMContentLoaded', async () => {
     const iak = document.getElementById('app_key');
     const writeAllBtn = document.getElementById('write_all');
 
-    ide.addEventListener('keydown', (e) => {
-      if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1 && !/[0-9a-fA-F]/.test(e.key)) {
-        e.preventDefault();
-        ensureWarningSpan(ide).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
-        console.log('Device EUI alanına geçersiz karakter (keydown) girildi:', e.key);
-      }
-    });
-    ide.addEventListener('input', (e) => {
-      let val = e.target.value;
-      let filtered = val.replace(/[^0-9a-fA-F]/g, '');
-      let warn = ensureWarningSpan(ide);
-      if (val !== filtered) {
-        e.target.value = filtered;
-        warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
-        console.log('Device EUI alanına geçersiz karakter (input) girildi:', val);
-      } else if (filtered.length > 16) {
-        e.target.value = filtered.slice(0, 16);
-        warn.textContent = 'En fazla 16 karakter girebilirsiniz.';
-        console.log('Device EUI alanına fazla karakter girildi:', filtered);
-      } else {
-        warn.textContent = '';
-      }
-      checkInputs();
-    });
+    function isHexChar(char) {
+      return /^[0-9a-fA-F]$/.test(char);
+    }
 
-    iae.addEventListener('keydown', (e) => {
-      if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1 && !/[0-9a-fA-F]/.test(e.key)) {
-        e.preventDefault();
-        ensureWarningSpan(iae).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
-        console.log('APP EUI alanına geçersiz karakter (keydown) girildi:', e.key);
-      }
-    });
-    iae.addEventListener('input', (e) => {
+    function filterHexInput(e, maxLen, label) {
       let val = e.target.value;
       let filtered = val.replace(/[^0-9a-fA-F]/g, '');
-      let warn = ensureWarningSpan(iae);
+      let warn = ensureWarningSpan(e.target);
       if (val !== filtered) {
         e.target.value = filtered;
         warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
-        console.log('APP EUI alanına geçersiz karakter (input) girildi:', val);
-      } else if (filtered.length > 16) {
-        e.target.value = filtered.slice(0, 16);
-        warn.textContent = 'En fazla 16 karakter girebilirsiniz.';
-        console.log('APP EUI alanına fazla karakter girildi:', filtered);
+        console.log(label + ' (input): Geçersiz karakter(ler) temizlendi:', val);
+      } else if (filtered.length > maxLen) {
+        e.target.value = filtered.slice(0, maxLen);
+        warn.textContent = 'En fazla ' + maxLen + ' karakter girebilirsiniz.';
+        console.log(label + ' (input): Fazla karakter temizlendi:', filtered);
       } else {
         warn.textContent = '';
       }
       checkInputs();
-    });
+    }
 
-    iak.addEventListener('keydown', (e) => {
-      if (!e.ctrlKey && !e.metaKey && !e.altKey && e.key.length === 1 && !/[0-9a-fA-F]/.test(e.key)) {
+    function handleHexKeydown(e, maxLen, label) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key.length === 1 && !isHexChar(e.key)) {
         e.preventDefault();
-        ensureWarningSpan(iak).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
-        console.log('APP KEY alanına geçersiz karakter (keydown) girildi:', e.key);
+        ensureWarningSpan(e.target).textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
+        console.log(label + ' (keydown): Geçersiz karakter engellendi:', e.key);
       }
-    });
-    iak.addEventListener('input', (e) => {
-      let val = e.target.value;
-      let filtered = val.replace(/[^0-9a-fA-F]/g, '');
-      let warn = ensureWarningSpan(iak);
-      if (val !== filtered) {
-        e.target.value = filtered;
-        warn.textContent = 'Sadece hexadecimal karakter girilebilir (0-9, A-F).';
-        console.log('APP KEY alanına geçersiz karakter (input) girildi:', val);
-      } else if (filtered.length > 32) {
-        e.target.value = filtered.slice(0, 32);
-        warn.textContent = 'En fazla 32 karakter girebilirsiniz.';
-        console.log('APP KEY alanına fazla karakter girildi:', filtered);
-      } else {
-        warn.textContent = '';
+      // Maksimum uzunluk kontrolü
+      if (e.target.value.length >= maxLen && e.key.length === 1 && isHexChar(e.key) && window.getSelection().toString() === '') {
+        e.preventDefault();
+        ensureWarningSpan(e.target).textContent = 'En fazla ' + maxLen + ' karakter girebilirsiniz.';
+        console.log(label + ' (keydown): Fazla karakter engellendi:', e.key);
       }
-      checkInputs();
-    });
+    }
+
+    function handleHexPaste(e, maxLen, label) {
+      let paste = (e.clipboardData || window.clipboardData).getData('text');
+      if (!/^[0-9a-fA-F]*$/.test(paste)) {
+        e.preventDefault();
+        ensureWarningSpan(e.target).textContent = 'Sadece hexadecimal karakter yapıştırılabilir (0-9, A-F).';
+        console.log(label + ' (paste): Geçersiz karakter(ler) yapıştırma engellendi:', paste);
+      } else if ((e.target.value.length + paste.length) > maxLen) {
+        e.preventDefault();
+        ensureWarningSpan(e.target).textContent = 'En fazla ' + maxLen + ' karakter girebilirsiniz.';
+        console.log(label + ' (paste): Fazla karakter yapıştırma engellendi:', paste);
+      }
+    }
+
+    function handleHexDrop(e, maxLen, label) {
+      let data = e.dataTransfer.getData('text');
+      if (!/^[0-9a-fA-F]*$/.test(data)) {
+        e.preventDefault();
+        ensureWarningSpan(e.target).textContent = 'Sadece hexadecimal karakter bırakılabilir (0-9, A-F).';
+        console.log(label + ' (drop): Geçersiz karakter(ler) bırakma engellendi:', data);
+      } else if ((e.target.value.length + data.length) > maxLen) {
+        e.preventDefault();
+        ensureWarningSpan(e.target).textContent = 'En fazla ' + maxLen + ' karakter girebilirsiniz.';
+        console.log(label + ' (drop): Fazla karakter bırakma engellendi:', data);
+      }
+    }
+
+    ide.addEventListener('keydown', (e) => handleHexKeydown(e, 16, 'Device EUI'));
+    ide.addEventListener('input', (e) => filterHexInput(e, 16, 'Device EUI'));
+    ide.addEventListener('paste', (e) => handleHexPaste(e, 16, 'Device EUI'));
+    ide.addEventListener('drop', (e) => handleHexDrop(e, 16, 'Device EUI'));
+
+    iae.addEventListener('keydown', (e) => handleHexKeydown(e, 16, 'APP EUI'));
+    iae.addEventListener('input', (e) => filterHexInput(e, 16, 'APP EUI'));
+    iae.addEventListener('paste', (e) => handleHexPaste(e, 16, 'APP EUI'));
+    iae.addEventListener('drop', (e) => handleHexDrop(e, 16, 'APP EUI'));
+
+    iak.addEventListener('keydown', (e) => handleHexKeydown(e, 32, 'APP KEY'));
+    iak.addEventListener('input', (e) => filterHexInput(e, 32, 'APP KEY'));
+    iak.addEventListener('paste', (e) => handleHexPaste(e, 32, 'APP KEY'));
+    iak.addEventListener('drop', (e) => handleHexDrop(e, 32, 'APP KEY'));
 
     checkInputs();
   }
