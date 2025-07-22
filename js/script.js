@@ -352,63 +352,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkInputs();
   }
-  if (window.IMask) {
-    const deviceEuiMask = IMask(
-      document.getElementById('device_eui'),
-      {
-        mask: /^[0-9a-fA-F]{0,16}$/,
-        prepare: (str) => str.toUpperCase(),
-        validate: (str) => /^[0-9A-F]{0,16}$/.test(str)
-      }
-    );
-    const appEuiMask = IMask(
-      document.getElementById('app_eui'),
-      {
-        mask: /^[0-9a-fA-F]{0,16}$/,
-        prepare: (str) => str.toUpperCase(),
-        validate: (str) => /^[0-9A-F]{0,16}$/.test(str)
-      }
-    );
-    const appKeyMask = IMask(
-      document.getElementById('app_key'),
-      {
-        mask: /^[0-9a-fA-F]{0,32}$/,
-        prepare: (str) => str.toUpperCase(),
-        validate: (str) => /^[0-9A-F]{0,32}$/.test(str)
-      }
-    );
-    deviceEuiMask.on('accept', () => {
-      console.log('Device EUI input:', deviceEuiMask.value);
-    });
-    appEuiMask.on('accept', () => {
-      console.log('APP EUI input:', appEuiMask.value);
-    });
-    appKeyMask.on('accept', () => {
-      console.log('APP KEY input:', appKeyMask.value);
-    });
-    console.log('imaskjs ile hexadecimal input maskeleri uygulandı.');
-  } else {
-    console.warn('imaskjs kütüphanesi yüklenemedi!');
-  }
-  const deviceEui = document.getElementById('device_eui');
-  const appEui = document.getElementById('app_eui');
-  const appKey = document.getElementById('app_key');
-  [
-    {el: deviceEui, max: 16, label: 'Device EUI'},
-    {el: appEui, max: 16, label: 'APP EUI'},
-    {el: appKey, max: 32, label: 'APP KEY'}
-  ].forEach(({el, max, label}) => {
-    if (!el) return;
-    el.addEventListener('keyup', (event) => {
-      let regEx = /^[0-9a-fA-F]+$/;
-      let isHex = regEx.test(event.target.value.toString());
-      if ((!isHex && event.target.value.length > 0) || event.target.value.length > max) {
-        event.target.value = event.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, max);
-      }
-      console.log(label + ' input:', event.target.value);
-    });
+  // --- TÜM ESKİ KONTROLLER VE MASKELER KALDIRILDI ---
+const deviceEui = document.getElementById('device_eui');
+const appEui = document.getElementById('app_eui');
+const appKey = document.getElementById('app_key');
+[
+  {el: deviceEui, max: 16, label: 'Device EUI'},
+  {el: appEui, max: 16, label: 'APP EUI'},
+  {el: appKey, max: 32, label: 'APP KEY'}
+].forEach(({el, max, label}) => {
+  if (!el) return;
+  el.addEventListener('keyup', (event) => {
+    let regEx = /^[0-9a-fA-F]+$/;
+    let isHex = regEx.test(event.target.value.toString());
+    if ((!isHex && event.target.value.length > 0) || event.target.value.length > max) {
+      event.target.value = event.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, max);
+    }
+    console.log(label + ' input:', event.target.value);
   });
-  console.log('Sadece hex karakter ve max uzunluk için keyup event ile kontrol aktif.');
+});
+console.log('Sadece hex karakter ve max uzunluk için keyup event ile kontrol aktif.');
 });
 
 const boards = {
