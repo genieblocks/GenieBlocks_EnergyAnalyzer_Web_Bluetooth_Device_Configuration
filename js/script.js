@@ -909,18 +909,19 @@ document.addEventListener('DOMContentLoaded', () => {
           logMsg('Cihaz bağlı değil, commit işlemi yapılamaz.');
           return;
         }
-        const commitServiceUUID = '0000a005-0000-1000-8000-00805f9b34fb';
+        const mainServiceUUID = '0000abcd-0000-1000-8000-00805f9b34fb';
+        const commitCharUUID = '0000a005-0000-1000-8000-00805f9b34fb';
         const server = device.gatt;
         let service = null;
         try {
-          service = await server.getPrimaryService(commitServiceUUID);
+          service = await server.getPrimaryService(mainServiceUUID);
         } catch (e) {
-          logMsg('Commit servisi bulunamadı: ' + e);
+          logMsg('Ana servis bulunamadı: ' + e);
           return;
         }
         let characteristic = null;
         try {
-          characteristic = await service.getCharacteristic(commitServiceUUID);
+          characteristic = await service.getCharacteristic(commitCharUUID);
         } catch (e) {
           logMsg('Commit karakteristiği bulunamadı: ' + e);
           return;
