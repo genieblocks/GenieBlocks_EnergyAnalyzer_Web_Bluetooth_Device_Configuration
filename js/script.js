@@ -904,6 +904,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const commitBtn = document.getElementById('commit_and_restart');
   if (commitBtn) {
     commitBtn.addEventListener('click', async () => {
+      let yazildi = false;
       try {
         if (!device || !device.gatt.connected) {
           logMsg('Cihaz bağlı değil, commit işlemi yapılamaz.');
@@ -912,29 +913,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const mainServiceUUID = '0000abcd-0000-1000-8000-00805f9b34fb';
         const commitCharUUID = '0000a005-0000-1000-8000-00805f9b34fb';
         const server = device.gatt;
-        let service = null;
-        try {
-          service = await server.getPrimaryService(mainServiceUUID);
-        } catch (e) {
-          logMsg('Ana servis bulunamadı: ' + e);
-          return;
-        }
-        let characteristic = null;
-        try {
-          characteristic = await service.getCharacteristic(commitCharUUID);
-        } catch (e) {
-          logMsg('Commit karakteristiği bulunamadı: ' + e);
-          return;
-        }
+        let service = await server.getPrimaryService(mainServiceUUID);
+        let characteristic = await service.getCharacteristic(commitCharUUID);
         await characteristic.writeValue(Uint8Array.of(0x01));
+        yazildi = true;
         logMsg('Ayarlar BLE commit karakteristiğine yazıldı. Cihaz yeniden başlatılıyor (bip sesi duyulacak).');
-        // --- Bağlantıyı kontrollü şekilde kopar ---
+      } catch (err) {
+        logMsg('Commit işlemi sırasında hata: ' + err);
+      } finally {
         if (device && device.gatt.connected) {
           device.gatt.disconnect();
           logMsg('BLE bağlantısı yazılım tarafından sonlandırıldı.');
+        } else if (!yazildi) {
+          logMsg('BLE bağlantısı cihaz tarafından sonlandırıldı.');
         }
-      } catch (err) {
-        logMsg('Commit işlemi sırasında hata: ' + err);
       }
     });
   }
