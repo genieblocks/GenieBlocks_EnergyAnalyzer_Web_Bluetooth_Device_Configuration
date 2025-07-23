@@ -919,7 +919,8 @@ document.addEventListener('DOMContentLoaded', () => {
         yazildi = true;
         logMsg('Ayarlar BLE commit karakteristiğine yazıldı. Cihaz yeniden başlatılıyor (bip sesi duyulacak).');
       } catch (err) {
-        logMsg('Commit işlemi sırasında hata: ' + err);
+        // Kullanıcıya hata mesajı gösterme, sadece konsola yaz
+        console.warn('Commit işlemi sırasında hata:', err);
       } finally {
         if (device && device.gatt.connected) {
           device.gatt.disconnect();
