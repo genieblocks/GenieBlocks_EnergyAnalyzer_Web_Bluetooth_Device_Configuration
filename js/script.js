@@ -377,6 +377,7 @@ function toggleUIConnected(connected) {
   let lbl = 'Cihaza Bağlan';
   const status = document.getElementById('connection-status');
   const commitBtn = document.getElementById('commit_and_restart');
+  const readBtn = document.getElementById('read_all');
   if (connected) {
     lbl = 'Bağlantıyı Kes';
     if (status) {
@@ -390,6 +391,7 @@ function toggleUIConnected(connected) {
     const writeBtn = document.getElementById('write_all');
     if (writeBtn) writeBtn.disabled = false;
     if (commitBtn) commitBtn.disabled = false;
+    if (readBtn) readBtn.disabled = false;
   } else {
     if (status) {
       status.textContent = 'Bağlı Değil';
@@ -402,6 +404,7 @@ function toggleUIConnected(connected) {
     const writeBtn = document.getElementById('write_all');
     if (writeBtn) writeBtn.disabled = true;
     if (commitBtn) commitBtn.disabled = true;
+    if (readBtn) readBtn.disabled = true;
   }
   butConnect.textContent = lbl;
 }
@@ -932,6 +935,19 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (!yazildi) {
           logMsg('BLE bağlantısı cihaz tarafından sonlandırıldı.');
         }
+      }
+    });
+  }
+  const readBtn = document.getElementById('read_all');
+  if (readBtn) {
+    readBtn.addEventListener('click', async () => {
+      try {
+        await readValue('device_eui');
+        await readValue('app_eui');
+        await readValue('app_key');
+        logMsg('Cihazdan veriler tekrar okundu ve alanlar güncellendi.');
+      } catch (e) {
+        logMsg('Cihazdan veri okuma sırasında hata: ' + e);
       }
     });
   }
