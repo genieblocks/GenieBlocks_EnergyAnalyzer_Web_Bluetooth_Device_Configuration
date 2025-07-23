@@ -125,6 +125,11 @@ async function connect() {
   logMsg('Cihaz seçildi: ' + device.name);
   const server = await device.gatt.connect();
   logMsg('Bluetooth bağlantısı kuruldu.');
+  // Bağlantı kopunca arayüzü güncelle
+  if (device && typeof onDisconnected === 'function') {
+    device.removeEventListener('gattserverdisconnected', onDisconnected); // Çift eklenmesin diye önce kaldır
+    device.addEventListener('gattserverdisconnected', onDisconnected);
+  }
   return server;
 }
 
