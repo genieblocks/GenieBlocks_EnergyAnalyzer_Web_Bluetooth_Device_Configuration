@@ -962,3 +962,43 @@ if (writeAllBtn) {
     writeAll();
   });
 }
+
+// --- Otomatik Sürüm Kontrolü ---
+const CURRENT_VERSION = document.querySelector('.app-version')?.textContent?.trim();
+const GITHUB_IO_URL = "https://genieblocks.github.io/GenieBlocks_EnergyAnalyzer_Web_Bluetooth_Device_Configuration/";
+
+function checkForNewVersion() {
+  fetch(GITHUB_IO_URL, { cache: "no-store" })
+    .then(response => response.text())
+    .then(html => {
+      // Yayındaki HTML'den versiyon numarasını çek
+      const match = html.match(/<div class="app-version">v([0-9.]+)<\/div>/);
+      if (match && match[1] && ("v" + match[1]) !== CURRENT_VERSION) {
+        showUpdateModal("Yeni sürüm yayınlandı! Sayfayı yenilemek için Tamam'a tıklayın.");
+      }
+    })
+    .catch(() => { /* Sessizce geç */ });
+}
+
+// Basit bir modal/popup fonksiyonu
+function showUpdateModal(msg) {
+  if (document.getElementById('update-modal')) return; // Tekrarlı gösterme
+  const modal = document.createElement('div');
+  modal.id = 'update-modal';
+  modal.style = `
+    position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;
+    background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;`;
+  modal.innerHTML = `
+    <div style="background:#fff;padding:32px 24px;border-radius:12px;box-shadow:0 2px 12px #0002;text-align:center;">
+      <div style="font-size:1.2em;margin-bottom:18px;">${msg}</div>
+      <button id="update-ok" style="padding:8px 24px;font-size:1em;border-radius:8px;background:#00a7e9;color:#fff;border:none;cursor:pointer;">Tamam</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  document.getElementById('update-ok').onclick = () => {
+    location.reload();
+  };
+}
+
+// 30 saniyede bir kontrol et
+setInterval(checkForNewVersion, 30000);
