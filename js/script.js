@@ -114,22 +114,18 @@ function encodePacket(panelId, values) {
  * output stream.
  */
 async function connect() {
-  try {
-    logMsg('Bluetooth cihazları aranıyor...');
-      device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-      optionalServices: [
-        '0000abcd-0000-1000-8000-00805f9b34fb'
-      ]
-    });
-    logMsg('Cihaz seçildi: ' + device.name);
-    const server = await device.gatt.connect();
-    logMsg('Bluetooth bağlantısı kuruldu.');
-    return server;
-  } catch (error) {
-    logMsg('Bluetooth bağlantısı başarısız: ' + error);
-    throw error;
-  }
+  logMsg('Bluetooth cihazları aranıyor...');
+  device = await navigator.bluetooth.requestDevice({
+    acceptAllDevices: true,
+    optionalServices: [
+      '0000abcd-0000-1000-8000-00805f9b34fb',
+      '0000a005-0000-1000-8000-00805f9b34fb' // Commit karakteristiği
+    ]
+  });
+  logMsg('Cihaz seçildi: ' + device.name);
+  const server = await device.gatt.connect();
+  logMsg('Bluetooth bağlantısı kuruldu.');
+  return server;
 }
 
 async function readActiveSensors() {
