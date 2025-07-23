@@ -313,11 +313,10 @@ async function onDisconnected(event) {
     }
   }
 
-  // Loop through activePanels and remove them
   destroyPanels();
 
   toggleUIConnected(false);
-  logMsg('Device ' + disconnectedDevice.name + ' is disconnected.');
+  logMsg('Cihaz ile bağlantı KOPTU! Lütfen tekrar bağlanın.');
 
   device = undefined;
   currentBoard = undefined;
@@ -329,6 +328,8 @@ async function onDisconnected(event) {
       input.disabled = true;
     }
   });
+  const writeBtn = document.getElementById('write_all');
+  if (writeBtn) writeBtn.disabled = true;
 }
 
 /**
@@ -382,12 +383,24 @@ function toggleUIConnected(connected) {
       status.classList.remove('disconnected');
       status.classList.add('connected');
     }
+    // Bağlantı kurulduğunda inputları ve yaz butonunu aktif et
+    [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
+      if (input) input.disabled = false;
+    });
+    const writeBtn = document.getElementById('write_all');
+    if (writeBtn) writeBtn.disabled = false;
   } else {
     if (status) {
       status.textContent = 'Bağlı Değil';
       status.classList.remove('connected');
       status.classList.add('disconnected');
     }
+    // Bağlantı yoksa inputları ve yaz butonunu pasif et
+    [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
+      if (input) input.disabled = true;
+    });
+    const writeBtn = document.getElementById('write_all');
+    if (writeBtn) writeBtn.disabled = true;
   }
   butConnect.textContent = lbl;
 }
