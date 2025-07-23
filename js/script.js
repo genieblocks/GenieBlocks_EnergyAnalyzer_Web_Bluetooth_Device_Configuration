@@ -118,8 +118,8 @@ async function connect() {
   device = await navigator.bluetooth.requestDevice({
     acceptAllDevices: true,
     optionalServices: [
-      '0000abcd-0000-1000-8000-00805f9b34fb',
-      '0000a005-0000-1000-8000-00805f9b34fb' // Commit karakteristiği
+      '0000abcd-0000-1000-8000-00805f9b34fb', // Ana servis
+      '0000a005-0000-1000-8000-00805f9b34fb'  // Commit karakteristiği
     ]
   });
   logMsg('Cihaz seçildi: ' + device.name);
