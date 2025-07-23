@@ -321,7 +321,6 @@ async function onDisconnected(event) {
 
   device = undefined;
   currentBoard = undefined;
-  setOtaaButtonsEnabled(false);
   // Bağlantı kesilince inputları disable ve temizle
   [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
     if (input) {
