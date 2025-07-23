@@ -928,6 +928,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         await characteristic.writeValue(Uint8Array.of(0x01));
         logMsg('Ayarlar BLE commit karakteristiğine yazıldı. Cihaz yeniden başlatılıyor (bip sesi duyulacak).');
+        // --- Bağlantıyı kontrollü şekilde kopar ---
+        if (device && device.gatt.connected) {
+          device.gatt.disconnect();
+          logMsg('BLE bağlantısı yazılım tarafından sonlandırıldı.');
+        }
       } catch (err) {
         logMsg('Commit işlemi sırasında hata: ' + err);
       }
