@@ -1001,5 +1001,5 @@ function showUpdateModal(msg) {
   };
 }
 
-// 30 saniyede bir kontrol et
-setInterval(checkForNewVersion, 30000);
+// 10 saniyede bir kontrol et
+setInterval(checkForNewVersion, 10000);
