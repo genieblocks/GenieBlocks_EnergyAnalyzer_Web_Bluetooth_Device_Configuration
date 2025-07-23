@@ -376,6 +376,7 @@ function convertJSON(chunk) {
 function toggleUIConnected(connected) {
   let lbl = 'Cihaza Bağlan';
   const status = document.getElementById('connection-status');
+  const commitBtn = document.getElementById('commit_and_restart');
   if (connected) {
     lbl = 'Bağlantıyı Kes';
     if (status) {
@@ -383,24 +384,24 @@ function toggleUIConnected(connected) {
       status.classList.remove('disconnected');
       status.classList.add('connected');
     }
-    // Bağlantı kurulduğunda inputları ve yaz butonunu aktif et
     [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
       if (input) input.disabled = false;
     });
     const writeBtn = document.getElementById('write_all');
     if (writeBtn) writeBtn.disabled = false;
+    if (commitBtn) commitBtn.disabled = false;
   } else {
     if (status) {
       status.textContent = 'Bağlı Değil';
       status.classList.remove('connected');
       status.classList.add('disconnected');
     }
-    // Bağlantı yoksa inputları ve yaz butonunu pasif et
     [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
       if (input) input.disabled = true;
     });
     const writeBtn = document.getElementById('write_all');
     if (writeBtn) writeBtn.disabled = true;
+    if (commitBtn) commitBtn.disabled = true;
   }
   butConnect.textContent = lbl;
 }
@@ -904,6 +905,37 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   console.log('Sadece hex karakter ve max uzunluk için keyup event ile kontrol aktif.');
+  const commitBtn = document.getElementById('commit_and_restart');
+  if (commitBtn) {
+    commitBtn.addEventListener('click', async () => {
+      try {
+        if (!device || !device.gatt.connected) {
+          logMsg('Cihaz bağlı değil, commit işlemi yapılamaz.');
+          return;
+        }
+        const commitServiceUUID = '0000a005-0000-1000-8000-00805f9b34fb';
+        const server = device.gatt;
+        let service = null;
+        try {
+          service = await server.getPrimaryService(commitServiceUUID);
+        } catch (e) {
+          logMsg('Commit servisi bulunamadı: ' + e);
+          return;
+        }
+        let characteristic = null;
+        try {
+          characteristic = await service.getCharacteristic(commitServiceUUID);
+        } catch (e) {
+          logMsg('Commit karakteristiği bulunamadı: ' + e);
+          return;
+        }
+        await characteristic.writeValue(Uint8Array.of(0x01));
+        logMsg('Ayarlar BLE commit karakteristiğine yazıldı. Cihaz yeniden başlatılıyor (bip sesi duyulacak).');
+      } catch (err) {
+        logMsg('Commit işlemi sırasında hata: ' + err);
+      }
+    });
+  }
 });
 
 // Yaz butonuna basıldığında inputlarda eksik karakter varsa uyarı göster
