@@ -258,6 +258,50 @@ body {
   }
 }
 
+#tab-modbus .form-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+#tab-modbus .form-row label {
+  flex: 0 0 110px;
+  min-width: 90px;
+  max-width: 140px;
+  font-size: 1em;
+  color: #333;
+  margin-right: 10px;
+  text-align: left;
+}
+#tab-modbus .form-row input[type="text"],
+#tab-modbus .form-row input[type="number"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 7px 10px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  background: #fafbfc;
+  transition: border 0.2s;
+  box-sizing: border-box;
+}
+#tab-modbus .form-row input[type="text"]:disabled,
+#tab-modbus .form-row input[type="number"]:disabled {
+  background: #f3f3f3;
+  color: #aaa;
+}
+@media (max-width: 600px) {
+  #tab-modbus .form-row label {
+    flex: 0 0 80px;
+    min-width: 60px;
+    font-size: 0.98em;
+  }
+  #tab-modbus .form-row input[type="text"],
+  #tab-modbus .form-row input[type="number"] {
+    font-size: 0.98em;
+    padding: 6px 8px;
+  }
+}
+
 @media (max-width: 600px) {
   .main-content {
     max-width: 100vw;
