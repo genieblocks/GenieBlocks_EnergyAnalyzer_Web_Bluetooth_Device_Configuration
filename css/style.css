@@ -362,6 +362,27 @@ body {
 }
 }
 
+.modbus-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+#tab-modbus .form-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#tab-modbus .form-row label {
+  min-width: 90px;
+  font-weight: 500;
+}
+#tab-modbus .form-row input {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-size: 1rem;
+}
 @media (max-width: 600px) {
   #tab-modbus .form-row {
     flex-direction: column;
