@@ -258,51 +258,6 @@ body {
   }
 }
 
-#tab-modbus .form-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-#tab-modbus .form-row label {
-  color: #222222;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  font-size: 16px;
-  min-width: 90px;
-  font-weight: 500;
-}
-#tab-modbus .form-row input {
-  background: #EFEFEF4D;
-  border: 1px solid #bbb;
-  border-radius: 6px;
-  font-size: 1rem;
-  padding: 7px 10px;
-  color: #222222;
-  flex: 1;
-}
-#tab-modbus .form-row input[type="text"]:disabled,
-#tab-modbus .form-row input[type="number"]:disabled {
-  background: #f3f3f3;
-  color: #aaa;
-}
-@media (max-width: 600px) {
-  #tab-modbus .form-row label {
-    flex: 0 0 80px;
-    min-width: 60px;
-    font-size: 0.98em;
-  }
-  #tab-modbus .form-row input[type="text"],
-  #tab-modbus .form-row input[type="number"] {
-    font-size: 0.98em;
-    padding: 6px 8px;
-  }
-}
-
-.modbus-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
 @media (max-width: 600px) {
   .main-content {
     max-width: 100vw;
@@ -360,45 +315,4 @@ body {
   box-sizing: border-box;
     text-align: center;
 }
-}
-
-.modbus-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-#tab-modbus .form-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-#tab-modbus .form-row label {
-  min-width: 90px;
-  font-weight: 500;
-}
-#tab-modbus .form-row input {
-  flex: 1;
-  padding: 7px 10px;
-  border: 1px solid #bbb;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-@media (max-width: 600px) {
-  #tab-modbus .form-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 2px;
-  }
-  #tab-modbus .form-row label {
-    min-width: 0;
-    font-size: 1.01em;
-    margin-bottom: 2px;
-  }
-  #tab-modbus .form-row input {
-    font-size: 1.01em;
-    padding: 10px 8px;
-  }
-  .modbus-form {
-    gap: 18px;
-  }
 }
