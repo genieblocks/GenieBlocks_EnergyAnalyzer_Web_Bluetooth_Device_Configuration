@@ -361,3 +361,23 @@ body {
     text-align: center;
 }
 }
+
+@media (max-width: 600px) {
+  #tab-modbus .form-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+  }
+  #tab-modbus .form-row label {
+    min-width: 0;
+    font-size: 1.01em;
+    margin-bottom: 2px;
+  }
+  #tab-modbus .form-row input {
+    font-size: 1.01em;
+    padding: 10px 8px;
+  }
+  .modbus-form {
+    gap: 12px;
+  }
+}
