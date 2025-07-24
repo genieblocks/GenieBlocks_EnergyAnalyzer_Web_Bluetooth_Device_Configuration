@@ -342,7 +342,15 @@ async function onDisconnected(event) {
   device = undefined;
   currentBoard = undefined;
   // Bağlantı kesilince inputları disable ve temizle
-  [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
+  [
+    document.getElementById('device_eui'),
+    document.getElementById('app_eui'),
+    document.getElementById('app_key'),
+    document.getElementById('platform'),
+    document.getElementById('freq'),
+    document.getElementById('pckpo'),
+    document.getElementById('adr')
+  ].forEach(input => {
     if (input) {
       input.value = '';
       input.disabled = true;
