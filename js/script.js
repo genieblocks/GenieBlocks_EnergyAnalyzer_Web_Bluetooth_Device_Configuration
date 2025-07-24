@@ -292,13 +292,7 @@ async function clickConnect() {
     toggleUIConnected(true);
     logMsg('Bluetooth cihazları başarıyla bulundu ve bağlanıldı.');
     try {
-      await readValue('device_eui');
-      await readValue('app_eui');
-      await readValue('app_key');
-      await readValue('platform');
-      await readValue('freq');
-      await readValue('pckpo');
-      await readValue('adr');
+      await readLoRaWANAll();
       await readModbusAll();
       [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
         if (input) input.disabled = false;
@@ -985,6 +979,36 @@ function bufferToString(dataView) {
   return str;
 }
 
+// LoRaWAN karakteristiklerini toplu okuma fonksiyonu
+async function readLoRaWANAll() {
+  try {
+    const server = device.gatt.connected ? device.gatt : await device.gatt.connect();
+    // Device EUI
+    const deveuiChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(DEVEUI_CHAR_UUID));
+    document.getElementById('device_eui').value = bufferToString(await deveuiChar.readValue());
+    // APP EUI
+    const appeuiChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(APPEUI_CHAR_UUID));
+    document.getElementById('app_eui').value = bufferToString(await appeuiChar.readValue());
+    // APP Key
+    const appkeyChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(APPKEY_CHAR_UUID));
+    document.getElementById('app_key').value = bufferToString(await appkeyChar.readValue());
+    // Platform
+    const platformChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(PLATFORM_CHAR_UUID));
+    document.getElementById('platform').value = bufferToString(await platformChar.readValue());
+    // Freq
+    const freqChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(FREQ_CHAR_UUID));
+    document.getElementById('freq').value = bufferToString(await freqChar.readValue());
+    // PckPo
+    const pckpoChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(PCKPO_CHAR_UUID));
+    document.getElementById('pckpo').value = bufferToString(await pckpoChar.readValue());
+    // ADR
+    const adrChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(ADR_CHAR_UUID));
+    document.getElementById('adr').value = bufferToString(await adrChar.readValue());
+  } catch (e) {
+    logMsg('LoRaWAN verileri okunamadı: ' + e);
+  }
+}
+
 // clickConnect fonksiyonunda LoRaWAN okuma işlemlerinden sonra:
 // await readModbusAll();
 
@@ -1056,13 +1080,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (readBtn) {
     readBtn.addEventListener('click', async () => {
       try {
-        await readValue('device_eui');
-        await readValue('app_eui');
-        await readValue('app_key');
-        await readValue('platform');
-        await readValue('freq');
-        await readValue('pckpo');
-        await readValue('adr');
+        await readLoRaWANAll();
+        await readModbusAll();
         logMsg('Cihazdan veriler tekrar okundu ve alanlar güncellendi.');
       } catch (e) {
         logMsg('Cihazdan veri okuma sırasında hata: ' + e);
