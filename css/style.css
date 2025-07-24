@@ -261,16 +261,11 @@ body {
 #tab-modbus .form-row {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
+  gap: 8px;
 }
 #tab-modbus .form-row label {
-  flex: 0 0 110px;
   min-width: 90px;
-  max-width: 140px;
-  font-size: 1em;
-  color: #333;
-  margin-right: 10px;
-  text-align: left;
+  font-weight: 500;
 }
 #tab-modbus .form-row input[type="text"],
 #tab-modbus .form-row input[type="number"] {
