@@ -118,6 +118,12 @@ const APPKEY_CHAR_UUID = '0000a203-0000-1000-8000-00805f9b34fb';
 const SYSTEM_SERVICE_UUID = '0000a200-0000-1000-8000-00805f9b34fb';
 const COMMIT_CHAR_UUID = '0000a210-0000-1000-8000-00805f9b34fb';
 
+// Yeni read-only karakteristik UUID'ler
+const PLATFORM_CHAR_UUID = '0000a204-0000-1000-8000-00805f9b34fb';
+const FREQ_CHAR_UUID = '0000a205-0000-1000-8000-00805f9b34fb';
+const PCKPO_CHAR_UUID = '0000a206-0000-1000-8000-00805f9b34fb';
+const ADR_CHAR_UUID = '0000a207-0000-1000-8000-00805f9b34fb';
+
 /**
  * @name connect
  * Opens a Web Serial connection to a micro:bit and sets up the input and
@@ -284,6 +290,7 @@ async function clickConnect() {
     await connect();
     toggleUIConnected(true);
     logMsg('Bluetooth cihazları başarıyla bulundu ve bağlanıldı.');
+    await afterConnectReadAll();
     try {
       await readValue('device_eui');
       await readValue('app_eui');
@@ -819,6 +826,7 @@ async function readValue(type) {
     if (!device || !device.gatt || !device.gatt.connected) throw 'Bluetooth bağlantısı yok.';
     let CHAR_UUID = '';
     let inputId = '';
+    let isString = false;
     if (type === 'device_eui') {
       CHAR_UUID = DEVEUI_CHAR_UUID;
       inputId = 'device_eui';
@@ -828,6 +836,20 @@ async function readValue(type) {
     } else if (type === 'app_key') {
       CHAR_UUID = APPKEY_CHAR_UUID;
       inputId = 'app_key';
+    } else if (type === 'platform') {
+      CHAR_UUID = PLATFORM_CHAR_UUID;
+      inputId = 'platform';
+      isString = true;
+    } else if (type === 'freq') {
+      CHAR_UUID = FREQ_CHAR_UUID;
+      inputId = 'freq';
+      isString = true;
+    } else if (type === 'pckpo') {
+      CHAR_UUID = PCKPO_CHAR_UUID;
+      inputId = 'pckpo';
+    } else if (type === 'adr') {
+      CHAR_UUID = ADR_CHAR_UUID;
+      inputId = 'adr';
     } else {
       throw 'Bilinmeyen karakteristik tipi';
     }
@@ -835,13 +857,26 @@ async function readValue(type) {
     const service = await server.getPrimaryService(LORAWAN_SERVICE_UUID);
     const characteristic = await service.getCharacteristic(CHAR_UUID);
     const value = await characteristic.readValue();
-    // 8 veya 16 byte'ı hex string olarak göster
-    let hex = '';
-    for (let i = 0; i < value.byteLength; i++) {
-      hex += value.getUint8(i).toString(16).padStart(2, '0').toUpperCase();
+    let result = '';
+    if (isString) {
+      // String olarak oku
+      for (let i = 0; i < value.byteLength; i++) {
+        const char = value.getUint8(i);
+        if (char === 0) break;
+        result += String.fromCharCode(char);
+      }
+    } else if (type === 'adr') {
+      result = value.getUint8(0) ? 'Evet' : 'Hayır';
+    } else if (type === 'pckpo') {
+      result = value.getUint8(0).toString();
+    } else {
+      // Hex string (eski alanlar)
+      for (let i = 0; i < value.byteLength; i++) {
+        result += value.getUint8(i).toString(16).padStart(2, '0').toUpperCase();
+      }
     }
-    document.getElementById(inputId).value = hex;
-    logMsg(inputId + ' okundu: ' + hex);
+    document.getElementById(inputId).value = result;
+    logMsg(inputId + ' okundu: ' + result);
   } catch (e) {
     logMsg(type + ' okunamadı: ' + e);
     throw e;
@@ -951,6 +986,10 @@ document.addEventListener('DOMContentLoaded', () => {
         await readValue('device_eui');
         await readValue('app_eui');
         await readValue('app_key');
+        await readValue('platform');
+        await readValue('freq');
+        await readValue('pckpo');
+        await readValue('adr');
         logMsg('Cihazdan veriler tekrar okundu ve alanlar güncellendi.');
       } catch (e) {
         logMsg('Cihazdan veri okuma sırasında hata: ' + e);
