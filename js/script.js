@@ -991,33 +991,71 @@ function hexStringFromBuffer(dataView) {
 
 // LoRaWAN karakteristiklerini toplu okuma fonksiyonu
 async function readLoRaWANAll() {
+  const server = device.gatt.connected ? device.gatt : await device.gatt.connect();
+  // Device EUI
   try {
-    const server = device.gatt.connected ? device.gatt : await device.gatt.connect();
-    // Device EUI
     const deveuiChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(DEVEUI_CHAR_UUID));
-    document.getElementById('device_eui').value = hexStringFromBuffer(await deveuiChar.readValue());
-    // APP EUI
+    const value = hexStringFromBuffer(await deveuiChar.readValue());
+    document.getElementById('device_eui').value = value;
+    logMsg('Device EUI okundu: ' + value);
+  } catch (e) {
+    logMsg('Device EUI okunamadı: ' + e);
+  }
+  // APP EUI
+  try {
     const appeuiChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(APPEUI_CHAR_UUID));
-    document.getElementById('app_eui').value = hexStringFromBuffer(await appeuiChar.readValue());
-    // APP Key
+    const value = hexStringFromBuffer(await appeuiChar.readValue());
+    document.getElementById('app_eui').value = value;
+    logMsg('APP EUI okundu: ' + value);
+  } catch (e) {
+    logMsg('APP EUI okunamadı: ' + e);
+  }
+  // APP Key
+  try {
     const appkeyChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(APPKEY_CHAR_UUID));
-    document.getElementById('app_key').value = hexStringFromBuffer(await appkeyChar.readValue());
-    // Platform
+    const value = hexStringFromBuffer(await appkeyChar.readValue());
+    document.getElementById('app_key').value = value;
+    logMsg('APP Key okundu: ' + value);
+  } catch (e) {
+    logMsg('APP Key okunamadı: ' + e);
+  }
+  // Platform
+  try {
     const platformChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(PLATFORM_CHAR_UUID));
-    document.getElementById('platform').value = bufferToString(await platformChar.readValue());
-    // Freq
+    const value = bufferToString(await platformChar.readValue());
+    document.getElementById('platform').value = value;
+    logMsg('Platform okundu: ' + value);
+  } catch (e) {
+    logMsg('Platform okunamadı: ' + e);
+  }
+  // Freq
+  try {
     const freqChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(FREQ_CHAR_UUID));
-    document.getElementById('freq').value = bufferToString(await freqChar.readValue());
-    // PckPo
+    const value = bufferToString(await freqChar.readValue());
+    document.getElementById('freq').value = value;
+    logMsg('Freq okundu: ' + value);
+  } catch (e) {
+    logMsg('Freq okunamadı: ' + e);
+  }
+  // PckPo
+  try {
     const pckpoChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(PCKPO_CHAR_UUID));
     const pckpoVal = await pckpoChar.readValue();
-    document.getElementById('pckpo').value = pckpoVal.getUint8(0).toString();
-    // ADR
+    const value = pckpoVal.getUint8(0).toString();
+    document.getElementById('pckpo').value = value;
+    logMsg('PckPo okundu: ' + value);
+  } catch (e) {
+    logMsg('PckPo okunamadı: ' + e);
+  }
+  // ADR
+  try {
     const adrChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(ADR_CHAR_UUID));
     const adrVal = await adrChar.readValue();
-    document.getElementById('adr').value = adrVal.getUint8(0).toString();
+    const value = adrVal.getUint8(0).toString();
+    document.getElementById('adr').value = value;
+    logMsg('ADR okundu: ' + value);
   } catch (e) {
-    logMsg('LoRaWAN verileri okunamadı: ' + e);
+    logMsg('ADR okunamadı: ' + e);
   }
 }
 
