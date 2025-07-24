@@ -979,19 +979,29 @@ function bufferToString(dataView) {
   return str;
 }
 
+function hexStringFromBuffer(dataView) {
+  let hex = '';
+  for (let i = 0; i < dataView.byteLength; i++) {
+    const v = dataView.getUint8(i);
+    if (v === 0) break;
+    hex += v.toString(16).padStart(2, '0').toUpperCase();
+  }
+  return hex;
+}
+
 // LoRaWAN karakteristiklerini toplu okuma fonksiyonu
 async function readLoRaWANAll() {
   try {
     const server = device.gatt.connected ? device.gatt : await device.gatt.connect();
     // Device EUI
     const deveuiChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(DEVEUI_CHAR_UUID));
-    document.getElementById('device_eui').value = bufferToString(await deveuiChar.readValue());
+    document.getElementById('device_eui').value = hexStringFromBuffer(await deveuiChar.readValue());
     // APP EUI
     const appeuiChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(APPEUI_CHAR_UUID));
-    document.getElementById('app_eui').value = bufferToString(await appeuiChar.readValue());
+    document.getElementById('app_eui').value = hexStringFromBuffer(await appeuiChar.readValue());
     // APP Key
     const appkeyChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(APPKEY_CHAR_UUID));
-    document.getElementById('app_key').value = bufferToString(await appkeyChar.readValue());
+    document.getElementById('app_key').value = hexStringFromBuffer(await appkeyChar.readValue());
     // Platform
     const platformChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(PLATFORM_CHAR_UUID));
     document.getElementById('platform').value = bufferToString(await platformChar.readValue());
