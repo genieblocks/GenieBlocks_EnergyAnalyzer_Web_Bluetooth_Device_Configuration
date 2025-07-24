@@ -294,6 +294,10 @@ async function clickConnect() {
       await readValue('device_eui');
       await readValue('app_eui');
       await readValue('app_key');
+      await readValue('platform');
+      await readValue('freq');
+      await readValue('pckpo');
+      await readValue('adr');
       [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
         if (input) input.disabled = false;
       });
