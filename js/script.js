@@ -290,7 +290,6 @@ async function clickConnect() {
     await connect();
     toggleUIConnected(true);
     logMsg('Bluetooth cihazları başarıyla bulundu ve bağlanıldı.');
-    await afterConnectReadAll();
     try {
       await readValue('device_eui');
       await readValue('app_eui');
