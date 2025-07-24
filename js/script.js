@@ -995,7 +995,12 @@ async function readLoRaWANAll() {
   // Device EUI
   try {
     const deveuiChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(DEVEUI_CHAR_UUID));
-    const value = hexStringFromBuffer(await deveuiChar.readValue());
+    const dataView = await deveuiChar.readValue();
+    logMsg('Device EUI DataView.byteLength: ' + dataView.byteLength);
+    let rawArr = [];
+    for (let i = 0; i < dataView.byteLength; i++) rawArr.push(dataView.getUint8(i).toString(16).padStart(2, '0'));
+    logMsg('Device EUI raw bytes: ' + rawArr.join(' '));
+    const value = hexStringFromBuffer(dataView);
     document.getElementById('device_eui').value = value;
     logMsg('Device EUI okundu: ' + value);
   } catch (e) {
