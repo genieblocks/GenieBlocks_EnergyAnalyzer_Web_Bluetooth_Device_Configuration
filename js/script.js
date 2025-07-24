@@ -108,6 +108,12 @@ function encodePacket(panelId, values) {
   return view.buffer;
 }
 
+// LoRaWAN yeni UUID'ler
+const LORAWAN_SERVICE_UUID = '0000a100-0000-1000-8000-00805f9b34fb';
+const DEVEUI_CHAR_UUID = '0000a201-0000-1000-8000-00805f9b34fb';
+const APPEUI_CHAR_UUID = '0000a202-0000-1000-8000-00805f9b34fb';
+const APPKEY_CHAR_UUID = '0000a203-0000-1000-8000-00805f9b34fb';
+
 /**
  * @name connect
  * Opens a Web Serial connection to a micro:bit and sets up the input and
@@ -118,7 +124,7 @@ async function connect() {
   device = await navigator.bluetooth.requestDevice({
     acceptAllDevices: true,
     optionalServices: [
-      '0000abcd-0000-1000-8000-00805f9b34fb', // Ana servis
+      LORAWAN_SERVICE_UUID,
       '0000a005-0000-1000-8000-00805f9b34fb'  // Commit karakteristiği
     ]
   });
@@ -807,23 +813,22 @@ function createMockPanels() {
 async function readValue(type) {
   try {
     if (!device || !device.gatt || !device.gatt.connected) throw 'Bluetooth bağlantısı yok.';
-    const SERVICE_UUID = '0000abcd-0000-1000-8000-00805f9b34fb';
     let CHAR_UUID = '';
     let inputId = '';
     if (type === 'device_eui') {
-      CHAR_UUID = '0000a001-0000-1000-8000-00805f9b34fb';
+      CHAR_UUID = DEVEUI_CHAR_UUID;
       inputId = 'device_eui';
     } else if (type === 'app_eui') {
-      CHAR_UUID = '0000a002-0000-1000-8000-00805f9b34fb';
+      CHAR_UUID = APPEUI_CHAR_UUID;
       inputId = 'app_eui';
     } else if (type === 'app_key') {
-      CHAR_UUID = '0000a003-0000-1000-8000-00805f9b34fb';
+      CHAR_UUID = APPKEY_CHAR_UUID;
       inputId = 'app_key';
     } else {
       throw 'Bilinmeyen karakteristik tipi';
     }
     const server = device.gatt.connected ? device.gatt : await device.gatt.connect();
-    const service = await server.getPrimaryService(SERVICE_UUID);
+    const service = await server.getPrimaryService(LORAWAN_SERVICE_UUID);
     const characteristic = await service.getCharacteristic(CHAR_UUID);
     const value = await characteristic.readValue();
     // 8 veya 16 byte'ı hex string olarak göster
@@ -842,29 +847,28 @@ async function readValue(type) {
 async function writeAll() {
   try {
     if (!device || !device.gatt || !device.gatt.connected) throw 'Bluetooth bağlantısı yok.';
-    const SERVICE_UUID = '0000abcd-0000-1000-8000-00805f9b34fb';
     const server = device.gatt.connected ? device.gatt : await device.gatt.connect();
-    const service = await server.getPrimaryService(SERVICE_UUID);
+    const service = await server.getPrimaryService(LORAWAN_SERVICE_UUID);
     // Device EUI
     let value = document.getElementById('device_eui').value.trim();
     if (value.length !== 16) throw 'Device EUI 8 byte (16 hex karakter) olmalı.';
     let buffer = new Uint8Array(8);
     for (let i = 0; i < 8; i++) buffer[i] = parseInt(value.substr(i*2,2),16);
-    let char1 = await service.getCharacteristic('0000a001-0000-1000-8000-00805f9b34fb');
+    let char1 = await service.getCharacteristic(DEVEUI_CHAR_UUID);
     await char1.writeValue(buffer);
     // APP EUI
     value = document.getElementById('app_eui').value.trim();
     if (value.length !== 16) throw 'APP EUI 8 byte (16 hex karakter) olmalı.';
     buffer = new Uint8Array(8);
     for (let i = 0; i < 8; i++) buffer[i] = parseInt(value.substr(i*2,2),16);
-    let char2 = await service.getCharacteristic('0000a002-0000-1000-8000-00805f9b34fb');
+    let char2 = await service.getCharacteristic(APPEUI_CHAR_UUID);
     await char2.writeValue(buffer);
     // APP Key
     value = document.getElementById('app_key').value.trim();
     if (value.length !== 32) throw 'APP Key 16 byte (32 hex karakter) olmalı.';
     buffer = new Uint8Array(16);
     for (let i = 0; i < 16; i++) buffer[i] = parseInt(value.substr(i*2,2),16);
-    let char3 = await service.getCharacteristic('0000a003-0000-1000-8000-00805f9b34fb');
+    let char3 = await service.getCharacteristic(APPKEY_CHAR_UUID);
     await char3.writeValue(buffer);
     logMsg('Tüm ayarlar başarıyla cihaza yazıldı.');
   } catch (e) {
@@ -917,7 +921,7 @@ document.addEventListener('DOMContentLoaded', () => {
           logMsg('Cihaz bağlı değil, commit işlemi yapılamaz.');
           return;
         }
-        const mainServiceUUID = '0000abcd-0000-1000-8000-00805f9b34fb';
+        const mainServiceUUID = LORAWAN_SERVICE_UUID;
         const commitCharUUID = '0000a005-0000-1000-8000-00805f9b34fb';
         const server = device.gatt;
         let service = await server.getPrimaryService(mainServiceUUID);
