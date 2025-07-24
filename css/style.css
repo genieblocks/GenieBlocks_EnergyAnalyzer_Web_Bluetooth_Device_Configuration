@@ -264,20 +264,20 @@ body {
   gap: 8px;
 }
 #tab-modbus .form-row label {
+  color: #222222;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 16px;
   min-width: 90px;
   font-weight: 500;
 }
-#tab-modbus .form-row input[type="text"],
-#tab-modbus .form-row input[type="number"] {
-  flex: 1 1 auto;
-  min-width: 0;
+#tab-modbus .form-row input {
+  background: #EFEFEF4D;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-size: 1rem;
   padding: 7px 10px;
-  font-size: 1em;
-  border: 1px solid #ccc;
-  border-radius: 7px;
-  background: #fafbfc;
-  transition: border 0.2s;
-  box-sizing: border-box;
+  color: #222222;
+  flex: 1;
 }
 #tab-modbus .form-row input[type="text"]:disabled,
 #tab-modbus .form-row input[type="number"]:disabled {
