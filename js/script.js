@@ -398,10 +398,10 @@ function convertJSON(chunk) {
 }
 
 function toggleUIConnected(connected) {
-  let lbl = 'Cihaza Bağlan';
   const status = document.getElementById('connection-status');
   const commitBtn = document.getElementById('commit_and_restart');
   const readBtn = document.getElementById('read_all');
+  let lbl = 'Cihaza Bağlan';
   if (connected) {
     lbl = 'Bağlantıyı Kes';
     if (status) {
@@ -423,14 +423,24 @@ function toggleUIConnected(connected) {
       status.classList.add('disconnected');
     }
     [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
-      if (input) input.disabled = true;
+      if (input) {
+        input.value = '';
+        input.disabled = true;
+      }
+    });
+    // Modbus inputlarını da temizle
+    const modbusInputs = document.querySelectorAll('#tab-modbus input');
+    modbusInputs.forEach(input => {
+      input.value = '';
+      input.disabled = true;
     });
     const writeBtn = document.getElementById('write_all');
     if (writeBtn) writeBtn.disabled = true;
     if (commitBtn) commitBtn.disabled = true;
     if (readBtn) readBtn.disabled = true;
   }
-  butConnect.textContent = lbl;
+  const butConnect = document.getElementById('butConnect');
+  if (butConnect) butConnect.textContent = lbl;
 }
 
 function loadAllSettings() {
