@@ -928,18 +928,16 @@ async function writeAll() {
 }
 
 // TAB arayüzü için sekme geçişi
-if (typeof window !== 'undefined') {
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
-        this.classList.add('active');
-        document.getElementById('tab-' + this.dataset.tab).style.display = '';
-      });
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.tab-modern').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tab-modern').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+      this.classList.add('active');
+      document.getElementById('tab-' + this.dataset.tab).style.display = '';
     });
   });
-}
+});
 
 // Modbus servis ve karakteristik UUID'leri
 defineModbusUUIDs();

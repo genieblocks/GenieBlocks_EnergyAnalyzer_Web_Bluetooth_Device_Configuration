@@ -216,6 +216,48 @@ body {
 }
 }
 
+/* Modern minimal tab başlıkları */
+.tab-container-modern {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+  gap: 0;
+  border-bottom: 2px solid #e0e0e0;
+  background: #fff;
+}
+.tab-modern {
+  flex: 1;
+  min-width: 120px;
+  padding: 12px 0 10px 0;
+  font-size: 1.08em;
+  text-align: center;
+  background: #fff;
+  color: #888;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s, border-bottom 0.2s;
+  outline: none;
+}
+.tab-modern.active {
+  color: #00a7e9;
+  border-bottom: 2.5px solid #00a7e9;
+  font-weight: 700;
+  background: #fff;
+}
+.tab-modern:not(.active):hover {
+  color: #00a7e9;
+  background: #f7f9fa;
+}
+@media (max-width: 600px) {
+  .tab-modern {
+    min-width: 80px;
+    font-size: 1em;
+    padding: 10px 0 8px 0;
+  }
+}
+
 @media (max-width: 600px) {
   .main-content {
     max-width: 100vw;
