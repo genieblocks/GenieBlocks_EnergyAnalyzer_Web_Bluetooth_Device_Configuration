@@ -298,6 +298,7 @@ async function clickConnect() {
       await readValue('freq');
       await readValue('pckpo');
       await readValue('adr');
+      await readModbusAll();
       [document.getElementById('device_eui'), document.getElementById('app_eui'), document.getElementById('app_key')].forEach(input => {
         if (input) input.disabled = false;
       });
@@ -925,6 +926,68 @@ async function writeAll() {
     logMsg('Ayarlar yazılamadı: ' + e);
   }
 }
+
+// TAB arayüzü için sekme geçişi
+if (typeof window !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
+        this.classList.add('active');
+        document.getElementById('tab-' + this.dataset.tab).style.display = '';
+      });
+    });
+  });
+}
+
+// Modbus servis ve karakteristik UUID'leri
+defineModbusUUIDs();
+function defineModbusUUIDs() {
+  window.MODBUS_SERVICE_UUID = '0000a400-0000-1000-8000-00805f9b34fb';
+  window.MB_ADDR_UUID     = '0000a401-0000-1000-8000-00805f9b34fb';
+  window.MB_BAUD_UUID     = '0000a402-0000-1000-8000-00805f9b34fb';
+  window.MB_PARITY_UUID   = '0000a403-0000-1000-8000-00805f9b34fb';
+  window.MB_STOPBITS_UUID = '0000a404-0000-1000-8000-00805f9b34fb';
+  window.MB_DATABITS_UUID = '0000a405-0000-1000-8000-00805f9b34fb';
+  window.MB_TIMEOUT_UUID  = '0000a406-0000-1000-8000-00805f9b34fb';
+  window.MB_POLLING_UUID  = '0000a407-0000-1000-8000-00805f9b34fb';
+  window.MB_FUNC_UUID     = '0000a408-0000-1000-8000-00805f9b34fb';
+  window.MB_REGSTART_UUID = '0000a409-0000-1000-8000-00805f9b34fb';
+  window.MB_REGLEN_UUID   = '0000a40a-0000-1000-8000-00805f9b34fb';
+}
+
+// Modbus karakteristiklerini oku
+async function readModbusAll() {
+  try {
+    const server = device.gatt.connected ? device.gatt : await device.gatt.connect();
+    const service = await server.getPrimaryService(MODBUS_SERVICE_UUID);
+    document.getElementById('mb_addr').value     = (await (await service.getCharacteristic(MB_ADDR_UUID)).readValue()).getUint8(0);
+    document.getElementById('mb_baud').value     = bufferToString(await (await service.getCharacteristic(MB_BAUD_UUID)).readValue());
+    document.getElementById('mb_parity').value   = (await (await service.getCharacteristic(MB_PARITY_UUID)).readValue()).getUint8(0);
+    document.getElementById('mb_stopbits').value = (await (await service.getCharacteristic(MB_STOPBITS_UUID)).readValue()).getUint8(0);
+    document.getElementById('mb_databits').value = (await (await service.getCharacteristic(MB_DATABITS_UUID)).readValue()).getUint8(0);
+    document.getElementById('mb_timeout').value  = bufferToString(await (await service.getCharacteristic(MB_TIMEOUT_UUID)).readValue());
+    document.getElementById('mb_polling').value  = bufferToString(await (await service.getCharacteristic(MB_POLLING_UUID)).readValue());
+    document.getElementById('mb_func').value     = (await (await service.getCharacteristic(MB_FUNC_UUID)).readValue()).getUint8(0);
+    document.getElementById('mb_regstart').value = (await (await service.getCharacteristic(MB_REGSTART_UUID)).readValue()).getUint16(0, true);
+    document.getElementById('mb_reglen').value   = (await (await service.getCharacteristic(MB_REGLEN_UUID)).readValue()).getUint16(0, true);
+  } catch (e) {
+    logMsg('Modbus verileri okunamadı: ' + e);
+  }
+}
+function bufferToString(dataView) {
+  let str = '';
+  for (let i = 0; i < dataView.byteLength; i++) {
+    const char = dataView.getUint8(i);
+    if (char === 0) break;
+    str += String.fromCharCode(char);
+  }
+  return str;
+}
+
+// clickConnect fonksiyonunda LoRaWAN okuma işlemlerinden sonra:
+// await readModbusAll();
 
 document.addEventListener('DOMContentLoaded', () => {
   const deviceEui = document.getElementById('device_eui');
