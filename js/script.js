@@ -983,7 +983,6 @@ function hexStringFromBuffer(dataView) {
   let hex = '';
   for (let i = 0; i < dataView.byteLength; i++) {
     const v = dataView.getUint8(i);
-    if (v === 0) break;
     hex += v.toString(16).padStart(2, '0').toUpperCase();
   }
   return hex;
