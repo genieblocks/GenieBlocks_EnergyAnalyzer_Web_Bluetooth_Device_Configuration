@@ -61,12 +61,11 @@
             <label for="adr">ADR</label>
             <input type="text" id="adr" name="adr" autocomplete="off" disabled>
           </div>
-          <div class="form-row">
+          <div class="form-row" style="display: flex; align-items: center; gap: 8px;">
             <button id="write_all" disabled>Yaz</button>
             <button id="read_all" type="button" disabled>Oku</button>
-          </div>
-          <div class="form-row">
-            <button id="commit_and_restart" type="button" disabled>Cihazı Yeniden Başlat</button>
+            <div style="flex:1"></div>
+            <button id="commit_and_restart" type="button" disabled style="margin-left:auto;">Cihazı Yeniden Başlat</button>
           </div>
         </form>
       </section>
@@ -75,6 +74,6 @@
         <div id="log" class="log-area"></div>
       </section>
     </main>
-    <div class="app-version">v1.5.19</div>
+    <div class="app-version">v1.5.20</div>
   </body>
 </html>
