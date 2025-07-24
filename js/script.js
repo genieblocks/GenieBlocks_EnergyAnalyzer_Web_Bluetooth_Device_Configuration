@@ -114,6 +114,10 @@ const DEVEUI_CHAR_UUID = '0000a201-0000-1000-8000-00805f9b34fb';
 const APPEUI_CHAR_UUID = '0000a202-0000-1000-8000-00805f9b34fb';
 const APPKEY_CHAR_UUID = '0000a203-0000-1000-8000-00805f9b34fb';
 
+// Commit (System) yeni UUID'ler
+const SYSTEM_SERVICE_UUID = '0000a200-0000-1000-8000-00805f9b34fb';
+const COMMIT_CHAR_UUID = '0000a210-0000-1000-8000-00805f9b34fb';
+
 /**
  * @name connect
  * Opens a Web Serial connection to a micro:bit and sets up the input and
@@ -921,11 +925,9 @@ document.addEventListener('DOMContentLoaded', () => {
           logMsg('Cihaz bağlı değil, commit işlemi yapılamaz.');
           return;
         }
-        const mainServiceUUID = LORAWAN_SERVICE_UUID;
-        const commitCharUUID = '0000a005-0000-1000-8000-00805f9b34fb';
         const server = device.gatt;
-        let service = await server.getPrimaryService(mainServiceUUID);
-        let characteristic = await service.getCharacteristic(commitCharUUID);
+        let service = await server.getPrimaryService(SYSTEM_SERVICE_UUID);
+        let characteristic = await service.getCharacteristic(COMMIT_CHAR_UUID);
         await characteristic.writeValue(Uint8Array.of(0x01));
         yazildi = true;
         logMsg('Ayarlar BLE commit karakteristiğine yazıldı. Cihaz yeniden başlatılıyor (bip sesi duyulacak).');
