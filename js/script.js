@@ -1010,10 +1010,12 @@ async function readLoRaWANAll() {
     document.getElementById('freq').value = bufferToString(await freqChar.readValue());
     // PckPo
     const pckpoChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(PCKPO_CHAR_UUID));
-    document.getElementById('pckpo').value = bufferToString(await pckpoChar.readValue());
+    const pckpoVal = await pckpoChar.readValue();
+    document.getElementById('pckpo').value = pckpoVal.getUint8(0).toString();
     // ADR
     const adrChar = await server.getPrimaryService(LORAWAN_SERVICE_UUID).then(s => s.getCharacteristic(ADR_CHAR_UUID));
-    document.getElementById('adr').value = bufferToString(await adrChar.readValue());
+    const adrVal = await adrChar.readValue();
+    document.getElementById('adr').value = adrVal.getUint8(0).toString();
   } catch (e) {
     logMsg('LoRaWAN verileri okunamadı: ' + e);
   }
