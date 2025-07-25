@@ -33,9 +33,10 @@
       </div>
 
       <!-- Modern, minimal tab menüsü -->
-      <div class="tab-container-modern" style="display:flex;justify-content:center;margin-bottom:16px;gap:0;">
-        <div class="tab-modern active" data-tab="lorawan">LoRaWAN</div>
-        <div class="tab-modern" data-tab="modbus">Modbus</div>
+      <div class="tab-container-modern">
+        <button class="tab-modern active" data-tab="lorawan">LoRaWAN</button>
+        <button class="tab-modern" data-tab="modbus">Modbus</button>
+        <button class="tab-modern" data-tab="firmware">Firmware</button>
       </div>
 
       <div class="tab-content" id="tab-lorawan">
@@ -85,6 +86,78 @@
         </form>
       </div>
 
+      <div class="tab-content" id="tab-firmware" class="tab-pane">
+        <form class="firmware-form">
+            <div class="firmware-header">
+                <h3>Firmware Güncelleme</h3>
+                <div class="firmware-info">Cihazın firmware'ini güncellemek için .bin uzantılı dosya seçin.</div>
+            </div>
+            
+            <div class="firmware-controls">
+                <div class="file-input-container">
+                    <input type="file" id="firmware-file" accept=".bin" disabled>
+                    <label for="firmware-file" class="file-input-label">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M10 1v14M4 9l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M3 15v2h14v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Firmware Dosyası Seç (.bin)
+                    </label>
+                </div>
+                
+                <div class="firmware-details" style="display: none;">
+                    <div class="detail-row">
+                        <span class="detail-label">Dosya:</span>
+                        <span id="firmware-filename" class="detail-value">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Boyut:</span>
+                        <span id="firmware-size" class="detail-value">-</span>
+                    </div>
+                </div>
+                
+                <div class="progress-container" style="display: none;">
+                    <div class="progress-header">
+                        <span>Yükleme Durumu</span>
+                        <span class="progress-text">%0</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="firmware-actions">
+                    <button type="button" id="start-upload" class="primary-button" disabled>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M8 1v11m-4-4l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M2 13v1h12v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        Yüklemeyi Başlat
+                    </button>
+                    <button type="button" id="cancel-upload" class="danger-button" disabled>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M3 3l10 10m-10 0l10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        İptal
+                    </button>
+                </div>
+            </div>
+            
+            <div class="firmware-log">
+                <div class="log-header">
+                    <span>İşlem Kayıtları</span>
+                    <button type="button" id="clear-firmware-log" class="text-button">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M2 4h12M5 4V2h6v2M4 6v8h8V6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        Temizle
+                    </button>
+                </div>
+                <div id="firmware-log-content"></div>
+            </div>
+        </form>
+    </div>
+
       <div class="form-row" style="display: flex; align-items: center; gap: 8px; margin-top: 18px;">
         <button id="write_all" disabled>Yaz</button>
         <button id="read_all" type="button" disabled>Oku</button>
@@ -97,6 +170,6 @@
       </div>
       <div id="log" class="log-area"></div>
     </main>
-    <div class="app-version">v1.7.8</div>
+    <div class="app-version">v1.7.14</div>
   </body>
 </html>

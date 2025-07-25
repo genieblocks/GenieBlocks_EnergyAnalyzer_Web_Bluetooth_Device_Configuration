@@ -258,6 +258,268 @@ body {
   }
 }
 
+/* Firmware Tab Styles */
+.firmware-form {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.firmware-header {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.firmware-header h3 {
+    margin: 0 0 8px;
+    color: #333;
+    font-size: 1.5em;
+}
+
+.firmware-info {
+    color: #666;
+    font-size: 0.95em;
+}
+
+.firmware-controls {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.file-input-container {
+    margin-bottom: 20px;
+}
+
+.file-input-container input[type="file"] {
+    display: none;
+}
+
+.file-input-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 20px;
+    background: #00a7e9;
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1.1em;
+}
+
+.file-input-label:hover {
+    background: #0097d1;
+}
+
+.file-input-label:active {
+    background: #0088bd;
+}
+
+.file-input-label svg {
+    color: currentColor;
+}
+
+.firmware-details {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+    font-size: 0.95em;
+}
+
+.detail-label {
+    color: #666;
+    width: 80px;
+}
+
+.detail-value {
+    color: #333;
+    font-family: monospace;
+}
+
+.progress-container {
+    margin: 24px 0;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    color: #444;
+    font-size: 0.95em;
+}
+
+.progress-bar {
+    height: 12px;
+    background: #e9ecef;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: #00a7e9;
+    transition: width 0.3s ease;
+}
+
+.firmware-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.firmware-actions button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1em;
+}
+
+.primary-button {
+    background: #28a745;
+    color: white;
+}
+
+.primary-button:hover {
+    background: #218838;
+}
+
+.danger-button {
+    background: #dc3545;
+    color: white;
+}
+
+.danger-button:hover {
+    background: #c82333;
+}
+
+.text-button {
+    background: none;
+    border: 1px solid #ccc;
+    color: #666;
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9em;
+    transition: all 0.2s;
+}
+
+.text-button:hover {
+    background: #f1f3f5;
+    border-color: #aaa;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.firmware-log {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    color: #444;
+}
+
+#firmware-log-content {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    height: 200px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 0.9em;
+    line-height: 1.5;
+    color: #333;
+}
+
+/* Tab Container Styles */
+.tab-container-modern {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+    gap: 0;
+}
+
+.tab-modern {
+    padding: 12px 24px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #666;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.2s;
+}
+
+.tab-modern:hover {
+    color: #00a7e9;
+}
+
+.tab-modern.active {
+    color: #00a7e9;
+    border-bottom-color: #00a7e9;
+}
+
+/* Responsive Styles */
+@media (max-width: 600px) {
+    .firmware-form {
+        padding: 15px;
+    }
+    
+    .firmware-controls {
+        padding: 16px;
+    }
+    
+    .firmware-actions {
+        flex-direction: column;
+    }
+    
+    .firmware-actions button {
+        width: 100%;
+    }
+    
+    #firmware-log-content {
+        height: 150px;
+    }
+    
+    .file-input-label {
+        font-size: 1em;
+        padding: 10px 16px;
+    }
+    
+    .firmware-header h3 {
+        font-size: 1.3em;
+    }
+}
+
 @media (max-width: 600px) {
   .main-content {
     max-width: 100vw;
