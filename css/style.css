@@ -284,12 +284,15 @@ body {
 .firmware-controls {
     background: #f8f9fa;
     border-radius: 12px;
-    padding: 24px;
+    padding: 20px;
     margin-bottom: 24px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .file-input-container {
     margin-bottom: 20px;
+    width: 100%;
 }
 
 .file-input-container input[type="file"] {
@@ -302,13 +305,17 @@ body {
     justify-content: center;
     gap: 8px;
     width: 100%;
-    padding: 12px 20px;
+    padding: 12px 16px;
     background: #00a7e9;
     color: white;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 1.1em;
+    font-size: 1em;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .file-input-label:hover {
@@ -491,7 +498,7 @@ button:disabled {
 /* Responsive Styles */
 @media (max-width: 600px) {
     .firmware-form {
-        padding: 15px;
+        padding: 12px;
     }
     
     .firmware-controls {
@@ -511,8 +518,8 @@ button:disabled {
     }
     
     .file-input-label {
-        font-size: 1em;
-        padding: 10px 16px;
+        padding: 10px 12px;
+        font-size: 0.95em;
     }
     
     .firmware-header h3 {
