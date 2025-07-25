@@ -1185,6 +1185,42 @@ if (writeAllBtn) {
   });
 }
 
+// Firmware dosyası seçme butonunu tetikle
+const firmwareFileInput = document.getElementById('firmware-file');
+const firmwareFileLabel = document.querySelector('.file-input-label');
+const firmwareDetails = document.querySelector('.firmware-details');
+const firmwareFilename = document.getElementById('firmware-filename');
+const firmwareSize = document.getElementById('firmware-size');
+
+if (firmwareFileLabel && firmwareFileInput) {
+    firmwareFileLabel.addEventListener('click', function(e) {
+        e.preventDefault();
+        firmwareFileInput.click();
+    });
+}
+
+if (firmwareFileInput) {
+    firmwareFileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!file.name.endsWith('.bin')) {
+            alert('Lütfen .bin uzantılı bir dosya seçin!');
+            firmwareFileInput.value = '';
+            firmwareDetails.style.display = 'none';
+            return;
+        }
+        firmwareFilename.textContent = file.name;
+        firmwareSize.textContent = formatFileSize(file.size);
+        firmwareDetails.style.display = 'block';
+    });
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    else return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
 // --- Otomatik Sürüm Kontrolü ---
 const CURRENT_VERSION = document.querySelector('.app-version')?.textContent?.trim();
 const GITHUB_IO_URL = "https://genieblocks.github.io/GenieBlocks_EnergyAnalyzer_Web_Bluetooth_Device_Configuration/";
