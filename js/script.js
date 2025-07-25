@@ -1267,3 +1267,33 @@ function showUpdateModal(msg) {
 
 // 10 saniyede bir kontrol et
 setInterval(checkForNewVersion, 10000);
+
+// Tab değişimi için event listener'ları ekle
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tab-modern').forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Aktif tab'ı değiştir
+            document.querySelectorAll('.tab-modern').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Tab içeriğini göster/gizle
+            document.querySelectorAll('.tab-pane').forEach(tc => tc.classList.remove('active'));
+            document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+
+            // Firmware tabı aktifse input'u enable yap, değilse disable
+            if (this.dataset.tab === 'firmware') {
+                firmwareFileInput.removeAttribute('disabled');
+            } else {
+                firmwareFileInput.setAttribute('disabled', 'disabled');
+            }
+        });
+    });
+
+    // Sayfa ilk açıldığında da kontrol et
+    const activeTab = document.querySelector('.tab-modern.active');
+    if (activeTab && activeTab.dataset.tab === 'firmware') {
+        firmwareFileInput.removeAttribute('disabled');
+    } else {
+        firmwareFileInput.setAttribute('disabled', 'disabled');
+    }
+});
