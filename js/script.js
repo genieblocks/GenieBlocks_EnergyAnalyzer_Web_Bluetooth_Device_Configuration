@@ -1195,23 +1195,30 @@ const firmwareSize = document.getElementById('firmware-size');
 if (firmwareFileLabel && firmwareFileInput) {
     firmwareFileLabel.addEventListener('click', function(e) {
         e.preventDefault();
+        console.log('Firmware dosyası seç butonuna tıklandı');
         firmwareFileInput.click();
     });
 }
 
 if (firmwareFileInput) {
     firmwareFileInput.addEventListener('change', function(e) {
+        console.log('Firmware dosyası seçildi, event:', e);
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file) {
+            console.log('Dosya seçilmedi.');
+            return;
+        }
         if (!file.name.endsWith('.bin')) {
             alert('Lütfen .bin uzantılı bir dosya seçin!');
             firmwareFileInput.value = '';
             firmwareDetails.style.display = 'none';
+            console.log('Yanlış dosya uzantısı:', file.name);
             return;
         }
         firmwareFilename.textContent = file.name;
         firmwareSize.textContent = formatFileSize(file.size);
         firmwareDetails.style.display = 'block';
+        console.log('Seçilen dosya:', file.name, file.size);
     });
 }
 
