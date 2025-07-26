@@ -1473,19 +1473,19 @@ async function startFirmwareUpload() {
         await commandChar.startNotifications();
         await progressChar.startNotifications();
 
-        // START komutu gönder ve ACK bekle
+        // START komutu gönder ve ACK bekle (Python ile aynı mantık)
         await sendOtaCommandNimbleOta('START', commandChar, file.size);
         
         let startAck;
         for (let i = 0; i < 10; i++) {
             if (cmdQueue.length > 0) {
-                startAck = parseOtaNotification(cmdQueue.shift());
+                startAck = parseCommandNotification(cmdQueue.shift());
                 break;
             }
             await new Promise(r => setTimeout(r, 200));
         }
         if (!startAck || !startAck.valid) throw new Error("START komutu için geçerli ACK alınamadı!");
-        if (startAck.status !== 0x0000) throw new Error("START komutu reddedildi: " + otaStatusText(startAck.status));
+        if (startAck.rsp !== 0x0000) throw new Error("START komutu reddedildi: " + otaStatusText(startAck.rsp));
         
         addFirmwareLog('START komutu onaylandı.', 'success');
 
@@ -1494,19 +1494,17 @@ async function startFirmwareUpload() {
         const sectors = splitFirmwareToSectors(arrayBuffer, 4096);
         addFirmwareLog(`Toplam sektör sayısı: ${sectors.length}`, 'info');
 
-        // Her sektör için CRC hesapla ve sektörün sonuna ekle
+        // Her sektör için CRC hesapla ve sektörün sonuna ekle (Python ile aynı)
         for (let i = 0; i < sectors.length; i++) {
             const sector = sectors[i];
             const sectorArray = new Uint8Array(sector);
             const crc = crc16ccitt(sectorArray);
             
-            // CRC'yi sektörün sonuna ekle (4 byte)
-            const sectorWithCrc = new Uint8Array(sectorArray.length + 4);
+            // CRC'yi sektörün sonuna ekle (2 byte - Python ile aynı)
+            const sectorWithCrc = new Uint8Array(sectorArray.length + 2);
             sectorWithCrc.set(sectorArray);
             sectorWithCrc[sectorArray.length] = crc & 0xFF;
             sectorWithCrc[sectorArray.length + 1] = (crc >> 8) & 0xFF;
-            sectorWithCrc[sectorArray.length + 2] = 0;
-            sectorWithCrc[sectorArray.length + 3] = 0;
             
             sectors[i] = sectorWithCrc.buffer;
         }
@@ -1525,19 +1523,26 @@ async function startFirmwareUpload() {
             
             addFirmwareLog(`Sektör #${secIdx + 1} gönderiliyor... (${sectorArray.length} byte)`, 'info');
 
-            // Sektörü 512-byte chunk'lara böl
-            const CHUNK_SIZE = 512;
-            const numChunks = Math.ceil(sectorArray.length / CHUNK_SIZE);
+            // Sektörü chunk'lara böl (Python ile aynı mantık)
+            // Python'da: max_bytes = min(512, client.mtu_size - 3) - 3
+            // Web Bluetooth'da MTU genellikle 23 byte, overhead 3 byte
+            const MTU_SIZE = 23;
+            const BLE_OVERHEAD = 3;
+            const HEADER_SIZE = 3;
+            const MAX_CHUNK_SIZE = Math.min(512, MTU_SIZE - BLE_OVERHEAD - HEADER_SIZE);
+            const numChunks = Math.ceil(sectorArray.length / MAX_CHUNK_SIZE);
             
             for (let chunkIdx = 0; chunkIdx < numChunks; chunkIdx++) {
-                const start = chunkIdx * CHUNK_SIZE;
-                const end = Math.min(start + CHUNK_SIZE, sectorArray.length);
+                const start = chunkIdx * MAX_CHUNK_SIZE;
+                const end = Math.min(start + MAX_CHUNK_SIZE, sectorArray.length);
                 const chunk = sectorArray.slice(start, end);
                 
                 // 3-byte header ekle: [sector_index_high, sector_index_low, chunk_sequence]
                 const header = new Uint8Array(3);
-                header[0] = (secIdx >> 8) & 0xFF;
-                header[1] = secIdx & 0xFF;
+                // Python'da: sec_idx if len(sector) == 4098 else 0xFFFF
+                const sectorIndex = (sectorArray.length === 4098) ? secIdx : 0xFFFF;
+                header[0] = (sectorIndex >> 8) & 0xFF;
+                header[1] = sectorIndex & 0xFF;
                 header[2] = (chunkIdx === numChunks - 1) ? 0xFF : chunkIdx; // 0xFF = son chunk
                 
                 // Header + chunk'ı birleştir
@@ -1548,24 +1553,38 @@ async function startFirmwareUpload() {
                 await firmwareChar.writeValue(packet);
             }
 
-            // ACK bekle
-            let ack;
+            // ACK bekle (Python ile aynı mantık)
+            let ack, rspSector;
             for (let i = 0; i < 20; i++) {
                 if (fwQueue.length > 0) {
-                    ack = parseOtaNotification(fwQueue.shift());
+                    const fwAck = parseFirmwareNotification(fwQueue.shift());
+                    ack = fwAck.status;
+                    rspSector = fwAck.curSector;
                     break;
                 }
                 await new Promise(r => setTimeout(r, 200));
             }
             
-            if (!ack || !ack.valid) throw new Error(`Sektör #${secIdx + 1} için geçerli ACK alınamadı!`);
-            if (ack.status !== 0x0000) {
-                addFirmwareLog(`Sektör #${secIdx + 1} için hata: ${otaStatusText(ack.status)}`, 'error');
-                throw new Error(`Sektör #${secIdx + 1} için hata: ${otaStatusText(ack.status)}`);
+            if (ack === 0x0000) { // FW_ACK_SUCCESS
+                addFirmwareLog(`Sektör #${secIdx + 1} başarıyla gönderildi.`, 'success');
+                updateFirmwareProgress(Math.round(((secIdx + 1) / sectors.length) * 100));
+                
+                if (secIdx === sectors.length - 1) {
+                    addFirmwareLog('Tüm sektörler gönderildi.', 'success');
+                }
+            } else if (ack === 0x0001 || ack === 0x0003 || ack === 0xFFFF) { // FW_ACK_CRC_ERROR, FW_ACK_LEN_ERROR, RSP_CRC_ERROR
+                const errorMsg = ack === 0x0003 ? 'Length Error' : 'CRC Error';
+                addFirmwareLog(`${errorMsg} - Sektör #${secIdx + 1} tekrar deneniyor...`, 'error');
+                secIdx--; // Aynı sektörü tekrar gönder
+                continue;
+            } else if (ack === 0x0002) { // FW_ACK_SECTOR_ERROR
+                addFirmwareLog(`Sektör Hatası, sektör #${rspSector} gönderiliyor...`, 'error');
+                secIdx = rspSector; // Belirtilen sektörden devam et
+                continue;
+            } else {
+                addFirmwareLog(`Bilinmeyen hata: 0x${ack.toString(16).toUpperCase()}`, 'error');
+                throw new Error(`Bilinmeyen hata: 0x${ack.toString(16).toUpperCase()}`);
             }
-            
-            addFirmwareLog(`Sektör #${secIdx + 1} başarıyla gönderildi.`, 'success');
-            updateFirmwareProgress(Math.round(((secIdx + 1) / sectors.length) * 100));
         }
 
         // END komutu gönder
@@ -1651,20 +1670,46 @@ function crc16ccitt(buffer) {
     return crc & 0xFFFF;
 }
 
-// NimBLEOta notification handler'ı (komut ve firmware için)
-function parseOtaNotification(data) {
-    // 20 byte: [0-1] ack/status, [2-3] cmd, [4-5] rsp/cur_sector, [18-19] crc
+// Python ile aynı notification handler'ları
+function parseFirmwareNotification(data) {
+    // Python: fw_notification_handler
     if (data.length !== 20) return { valid: false };
-    const crcData = data.slice(0, 18);
-    const crc = data[18] | (data[19] << 8);
-    const calcCrc = crc16ccitt(crcData);
+    
+    const sectorSent = (data[1] << 8) | data[0]; // little endian
+    const status = (data[3] << 8) | data[2];
+    const curSector = (data[5] << 8) | data[4];
+    const crc = (data[19] << 8) | data[18];
+    
+    const calcCrc = crc16ccitt(data.slice(0, 18));
+    const isValid = crc === calcCrc;
+    
     return {
-        valid: crc === calcCrc,
-        status: data[0] | (data[1] << 8),
-        cmd: data[2] | (data[3] << 8),
-        rsp: data[4] | (data[5] << 8),
-        cur_sector: data[4] | (data[5] << 8),
-        raw: data,
+        valid: isValid,
+        sectorSent,
+        status: isValid ? status : 0xFFFF, // RSP_CRC_ERROR
+        curSector,
+        crc,
+        calcCrc
+    };
+}
+
+function parseCommandNotification(data) {
+    // Python: cmd_notification_handler
+    if (data.length !== 20) return { valid: false };
+    
+    const ack = (data[1] << 8) | data[0];
+    const cmd = (data[3] << 8) | data[2];
+    const rsp = (data[5] << 8) | data[4];
+    const crc = (data[19] << 8) | data[18];
+    
+    const calcCrc = crc16ccitt(data.slice(0, 18));
+    const isValid = crc === calcCrc;
+    
+    return {
+        valid: isValid,
+        ack,
+        cmd,
+        rsp: isValid ? rsp : 0xFFFF, // RSP_CRC_ERROR
         crc,
         calcCrc
     };
