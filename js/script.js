@@ -1442,14 +1442,79 @@ async function startFirmwareUpload() {
 
     try {
         const server = device.gatt;
+        addFirmwareLog('GATT server bağlantısı kuruldu.', 'info');
+        
+        // Tüm servisleri listele (debug için)
+        const services = await server.getPrimaryServices();
+        addFirmwareLog(`Bulunan servis sayısı: ${services.length}`, 'info');
+        for (let i = 0; i < services.length; i++) {
+            const service = services[i];
+            addFirmwareLog(`Servis ${i + 1}: ${service.uuid}`, 'info');
+        }
+        
+        // OTA servisini al
+        addFirmwareLog(`OTA servisi aranıyor: ${OTA_SERVICE_UUID}`, 'info');
         const otaService = await server.getPrimaryService(OTA_SERVICE_UUID);
-        const firmwareChar = await otaService.getCharacteristic(OTA_RECV_CHARACTERISTIC_UUID);
-        const progressChar = await otaService.getCharacteristic(OTA_PROGRESS_CHARACTERISTIC_UUID);
-        const commandChar = await otaService.getCharacteristic(OTA_COMMAND_CHARACTERISTIC_UUID);
+        addFirmwareLog('OTA servisi bulundu.', 'success');
+        
+        // OTA servisindeki tüm karakteristikleri listele (debug için)
+        const characteristics = await otaService.getCharacteristics();
+        addFirmwareLog(`OTA servisindeki karakteristik sayısı: ${characteristics.length}`, 'info');
+        
+        // Karakteristikleri UUID'lerine göre grupla
+        const charMap = {};
+        for (let i = 0; i < characteristics.length; i++) {
+            const char = characteristics[i];
+            const uuid = char.uuid;
+            charMap[uuid] = char;
+            addFirmwareLog(`Karakteristik ${i + 1}: ${uuid} (${char.properties.join(', ')})`, 'info');
+        }
+        
+        // Beklenen UUID'leri kontrol et
+        const expectedUuids = {
+            'firmware': OTA_RECV_CHARACTERISTIC_UUID,
+            'progress': OTA_PROGRESS_CHARACTERISTIC_UUID,
+            'command': OTA_COMMAND_CHARACTERISTIC_UUID
+        };
+        
+        addFirmwareLog('Beklenen UUID\'ler:', 'info');
+        for (const [name, uuid] of Object.entries(expectedUuids)) {
+            addFirmwareLog(`  ${name}: ${uuid}`, 'info');
+        }
+        
+        // Karakteristikleri al (hata yönetimi ile)
+        let firmwareChar, progressChar, commandChar;
+        
+        try {
+            addFirmwareLog(`Firmware karakteristiği aranıyor: ${OTA_RECV_CHARACTERISTIC_UUID}`, 'info');
+            firmwareChar = await otaService.getCharacteristic(OTA_RECV_CHARACTERISTIC_UUID);
+            addFirmwareLog('Firmware karakteristiği bulundu.', 'success');
+        } catch (error) {
+            addFirmwareLog(`Firmware karakteristiği bulunamadı: ${error.message}`, 'error');
+            throw error;
+        }
+        
+        try {
+            addFirmwareLog(`Progress karakteristiği aranıyor: ${OTA_PROGRESS_CHARACTERISTIC_UUID}`, 'info');
+            progressChar = await otaService.getCharacteristic(OTA_PROGRESS_CHARACTERISTIC_UUID);
+            addFirmwareLog('Progress karakteristiği bulundu.', 'success');
+        } catch (error) {
+            addFirmwareLog(`Progress karakteristiği bulunamadı: ${error.message}`, 'error');
+            throw error;
+        }
+        
+        try {
+            addFirmwareLog(`Command karakteristiği aranıyor: ${OTA_COMMAND_CHARACTERISTIC_UUID}`, 'info');
+            commandChar = await otaService.getCharacteristic(OTA_COMMAND_CHARACTERISTIC_UUID);
+            addFirmwareLog('Command karakteristiği bulundu.', 'success');
+        } catch (error) {
+            addFirmwareLog(`Command karakteristiği bulunamadı: ${error.message}`, 'error');
+            throw error;
+        }
 
         window._otaCommandChar = commandChar;
 
-        addFirmwareLog('OTA servis ve karakteristikleri bulundu.', 'success');
+        addFirmwareLog('Tüm OTA karakteristikleri başarıyla bulundu.', 'success');
 
         // Notification queue'ları oluştur
         let cmdQueue = [];
