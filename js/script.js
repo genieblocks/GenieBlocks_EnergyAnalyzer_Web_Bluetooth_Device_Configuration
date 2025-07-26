@@ -1611,14 +1611,11 @@ async function startFirmwareUpload() {
                 const end = Math.min(start + MAX_CHUNK_SIZE, sectorArray.length);
                 const chunk = sectorArray.slice(start, end);
                 
-                // 3-byte header ekle: [sector_index_high, sector_index_low, chunk_sequence]
+                // 3-byte header ekle: [sector_index_low, sector_index_high, chunk_sequence] (little-endian)
                 const header = new Uint8Array(3);
-                // Python'da: sec_idx if len(sector) == 4098 else 0xFFFF
-                // Son sektör için 0xFFFF, diğerleri için secIdx kullan
-                const sectorIndex = (secIdx === sectors.length - 1) ? 0xFFFF : secIdx;
-                header[0] = (sectorIndex >> 8) & 0xFF;
-                header[1] = sectorIndex & 0xFF;
-                header[2] = (chunkIdx === numChunks - 1) ? 0xFF : chunkIdx; // 0xFF = son chunk
+                header[0] = sectorIndex & 0xFF; // low byte
+                header[1] = (sectorIndex >> 8) & 0xFF; // high byte
+                header[2] = (chunkIdx === numChunks - 1) ? 0xFF : chunkIdx;
                 
                 // Header + chunk'ı birleştir
                 const packet = new Uint8Array(3 + chunk.length);
