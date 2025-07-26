@@ -1525,6 +1525,7 @@ async function startFirmwareUpload() {
         commandChar.addEventListener('characteristicvaluechanged', (event) => {
             const value = event.target.value;
             const data = new Uint8Array(value.buffer);
+            addFirmwareLog('Command notification geldi: ' + Array.from(data).map(x=>x.toString(16).padStart(2,'0')).join(' '), 'info');
             cmdQueue.push(data);
         });
 
@@ -1550,7 +1551,10 @@ async function startFirmwareUpload() {
         let startAck;
         for (let i = 0; i < 10; i++) {
             if (cmdQueue.length > 0) {
-                startAck = parseCommandNotification(cmdQueue.shift());
+                const raw = cmdQueue.shift();
+                const parsed = parseCommandNotification(raw);
+                addFirmwareLog('ACK parse: ' + JSON.stringify(parsed), 'info');
+                startAck = parsed;
                 break;
             }
             await new Promise(r => setTimeout(r, 200));
