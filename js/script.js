@@ -1400,40 +1400,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 512 byte'lık paketlere bölüp gönder
-async function sendSector(sector, recvChar) {
-    const PACKET_SIZE = 512;
-    let arr = new Uint8Array(sector);
-    for (let i = 0; i < arr.length; i += PACKET_SIZE) {
-        let chunk = arr.slice(i, i + PACKET_SIZE);
-        await recvChar.writeValue(chunk);
-    }
-}
 
-// Cihazdan ACK bekle (progressChar üzerinden)
-// NimBLEOta'da genellikle progressChar'dan notify ile cevap gelir
-async function waitForAck(progressChar, expectedCrc, timeout = 5000) {
-    return new Promise((resolve, reject) => {
-        let timer;
-        function onNotify(event) {
-            const value = event.target.value;
-            // CRC16 değeri 2 byte olarak gelir
-            const crc = value.getUint16(0, true);
-            if (crc === expectedCrc) {
-                clearTimeout(timer);
-                progressChar.removeEventListener('characteristicvaluechanged', onNotify);
-                resolve();
-            }
-        }
-        progressChar.addEventListener('characteristicvaluechanged', onNotify);
-        progressChar.startNotifications();
-
-        timer = setTimeout(() => {
-            progressChar.removeEventListener('characteristicvaluechanged', onNotify);
-            reject(new Error('ACK (CRC) beklenirken zaman aşımı!'));
-        }, timeout);
-    });
-}
 
 // Firmware upload işlemi sırasında iptal kontrolü için global değişken
 let firmwareUploadCancelled = false;
@@ -1444,7 +1411,7 @@ function cancelFirmwareUpload() {
     addFirmwareLog('Firmware güncelleme iptal edildi. Cihaza CANCEL komutu gönderiliyor...', 'info');
     // Eğer commandChar erişimi varsa CANCEL komutu gönder
     if (window._otaCommandChar) {
-        sendOtaCommand('CANCEL', window._otaCommandChar)
+        sendOtaCommandNimbleOta('CANCEL', window._otaCommandChar)
             .then(() => addFirmwareLog('CANCEL komutu gönderildi.', 'info'))
             .catch(() => addFirmwareLog('CANCEL komutu gönderilemedi.', 'error'));
     }
@@ -1452,7 +1419,7 @@ function cancelFirmwareUpload() {
     setFirmwareUiBusy(false);
 }
 
-// startFirmwareUpload fonksiyonunda iptal ve hata yönetimi
+// NimBLEOta protokolüne uygun firmware upload fonksiyonu
 async function startFirmwareUpload() {
     addFirmwareLog('Firmware güncelleme başlatılıyor...', 'info');
     firmwareUploadCancelled = false;
@@ -1476,43 +1443,140 @@ async function startFirmwareUpload() {
     try {
         const server = device.gatt;
         const otaService = await server.getPrimaryService(OTA_SERVICE_UUID);
-        const recvChar = await otaService.getCharacteristic(OTA_RECV_CHARACTERISTIC_UUID);
+        const firmwareChar = await otaService.getCharacteristic(OTA_RECV_CHARACTERISTIC_UUID);
         const progressChar = await otaService.getCharacteristic(OTA_PROGRESS_CHARACTERISTIC_UUID);
         const commandChar = await otaService.getCharacteristic(OTA_COMMAND_CHARACTERISTIC_UUID);
 
         window._otaCommandChar = commandChar;
 
         addFirmwareLog('OTA servis ve karakteristikleri bulundu.', 'success');
-        await sendOtaCommand('START', commandChar);
 
+        // Notification queue'ları oluştur
+        let cmdQueue = [];
+        let fwQueue = [];
+
+        // Command characteristic notification listener
+        commandChar.addEventListener('characteristicvaluechanged', (event) => {
+            const value = event.target.value;
+            const data = new Uint8Array(value.buffer);
+            cmdQueue.push(data);
+        });
+
+        // Firmware characteristic notification listener  
+        progressChar.addEventListener('characteristicvaluechanged', (event) => {
+            const value = event.target.value;
+            const data = new Uint8Array(value.buffer);
+            fwQueue.push(data);
+        });
+
+        // Notification'ları başlat
+        await commandChar.startNotifications();
+        await progressChar.startNotifications();
+
+        // START komutu gönder ve ACK bekle
+        await sendOtaCommandNimbleOta('START', commandChar, file.size);
+        
+        let startAck;
+        for (let i = 0; i < 10; i++) {
+            if (cmdQueue.length > 0) {
+                startAck = parseOtaNotification(cmdQueue.shift());
+                break;
+            }
+            await new Promise(r => setTimeout(r, 200));
+        }
+        if (!startAck || !startAck.valid) throw new Error("START komutu için geçerli ACK alınamadı!");
+        if (startAck.status !== 0x0000) throw new Error("START komutu reddedildi: " + otaStatusText(startAck.status));
+        
+        addFirmwareLog('START komutu onaylandı.', 'success');
+
+        // Firmware dosyasını oku ve sektörlere böl
         const arrayBuffer = await file.arrayBuffer();
         const sectors = splitFirmwareToSectors(arrayBuffer, 4096);
         addFirmwareLog(`Toplam sektör sayısı: ${sectors.length}`, 'info');
 
+        // Her sektör için CRC hesapla ve sektörün sonuna ekle
         for (let i = 0; i < sectors.length; i++) {
+            const sector = sectors[i];
+            const sectorArray = new Uint8Array(sector);
+            const crc = crc16ccitt(sectorArray);
+            
+            // CRC'yi sektörün sonuna ekle (4 byte)
+            const sectorWithCrc = new Uint8Array(sectorArray.length + 4);
+            sectorWithCrc.set(sectorArray);
+            sectorWithCrc[sectorArray.length] = crc & 0xFF;
+            sectorWithCrc[sectorArray.length + 1] = (crc >> 8) & 0xFF;
+            sectorWithCrc[sectorArray.length + 2] = 0;
+            sectorWithCrc[sectorArray.length + 3] = 0;
+            
+            sectors[i] = sectorWithCrc.buffer;
+        }
+
+        // Sektörleri gönder
+        for (let secIdx = 0; secIdx < sectors.length; secIdx++) {
             if (firmwareUploadCancelled) {
                 addFirmwareLog('Kullanıcı tarafından iptal edildi. İşlem durduruldu.', 'error');
                 updateFirmwareProgress(0);
                 setFirmwareUiBusy(false);
                 return;
             }
-            const sector = sectors[i];
-            const crc = crc16(sector);
-            addFirmwareLog(`Sektör #${i + 1} gönderiliyor...`, 'info');
-            await sendSector(sector, recvChar);
-            addFirmwareLog(`Sektör #${i + 1} gönderildi, ACK (CRC16: 0x${crc.toString(16).toUpperCase()}) bekleniyor...`, 'info');
-            await waitForAck(progressChar, crc);
-            addFirmwareLog(`Sektör #${i + 1} için ACK alındı.`, 'success');
-            updateFirmwareProgress(Math.round(((i + 1) / sectors.length) * 100));
+
+            const sector = sectors[secIdx];
+            const sectorArray = new Uint8Array(sector);
+            
+            addFirmwareLog(`Sektör #${secIdx + 1} gönderiliyor... (${sectorArray.length} byte)`, 'info');
+
+            // Sektörü 512-byte chunk'lara böl
+            const CHUNK_SIZE = 512;
+            const numChunks = Math.ceil(sectorArray.length / CHUNK_SIZE);
+            
+            for (let chunkIdx = 0; chunkIdx < numChunks; chunkIdx++) {
+                const start = chunkIdx * CHUNK_SIZE;
+                const end = Math.min(start + CHUNK_SIZE, sectorArray.length);
+                const chunk = sectorArray.slice(start, end);
+                
+                // 3-byte header ekle: [sector_index_high, sector_index_low, chunk_sequence]
+                const header = new Uint8Array(3);
+                header[0] = (secIdx >> 8) & 0xFF;
+                header[1] = secIdx & 0xFF;
+                header[2] = (chunkIdx === numChunks - 1) ? 0xFF : chunkIdx; // 0xFF = son chunk
+                
+                // Header + chunk'ı birleştir
+                const packet = new Uint8Array(3 + chunk.length);
+                packet.set(header);
+                packet.set(chunk, 3);
+                
+                await firmwareChar.writeValue(packet);
+            }
+
+            // ACK bekle
+            let ack;
+            for (let i = 0; i < 20; i++) {
+                if (fwQueue.length > 0) {
+                    ack = parseOtaNotification(fwQueue.shift());
+                    break;
+                }
+                await new Promise(r => setTimeout(r, 200));
+            }
+            
+            if (!ack || !ack.valid) throw new Error(`Sektör #${secIdx + 1} için geçerli ACK alınamadı!`);
+            if (ack.status !== 0x0000) {
+                addFirmwareLog(`Sektör #${secIdx + 1} için hata: ${otaStatusText(ack.status)}`, 'error');
+                throw new Error(`Sektör #${secIdx + 1} için hata: ${otaStatusText(ack.status)}`);
+            }
+            
+            addFirmwareLog(`Sektör #${secIdx + 1} başarıyla gönderildi.`, 'success');
+            updateFirmwareProgress(Math.round(((secIdx + 1) / sectors.length) * 100));
         }
 
-        await sendOtaCommand('END', commandChar);
+        // END komutu gönder
+        await sendOtaCommandNimbleOta('END', commandChar);
         addFirmwareLog('Firmware güncelleme tamamlandı!', 'success');
         updateFirmwareProgress(100);
         flashFirmwareLogBg('success');
         setFirmwareUiBusy(false);
+        
     } catch (err) {
-        addFirmwareLog('Hata: ' + err, 'error');
+        addFirmwareLog('Hata: ' + err.message, 'error');
         updateFirmwareProgress(0);
         flashFirmwareLogBg('error');
         setFirmwareUiBusy(false);
@@ -1536,14 +1600,27 @@ const OTA_RECV_CHARACTERISTIC_UUID = 0x8020;
 const OTA_PROGRESS_CHARACTERISTIC_UUID = 0x8021;
 const OTA_COMMAND_CHARACTERISTIC_UUID = 0x8022;
 
-// 2. START komutu gönderme fonksiyonu
-async function sendOtaCommand(command, commandChar) {
-    // command: string (ör: "START", "END", "CANCEL", "REBOOT")
-    // commandChar: BluetoothRemoteGATTCharacteristic
-    const encoder = new TextEncoder();
-    const data = encoder.encode(command);
-    await commandChar.writeValue(data);
-    addFirmwareLog(`Komut gönderildi: ${command}`, 'info');
+// 2. NimBLEOta komut gönderme fonksiyonu
+async function sendOtaCommandNimbleOta(type, commandChar, fileSize = 0) {
+    let cmd = 0x0001; // START
+    if (type === "END") cmd = 0x0002;
+    if (type === "CANCEL") cmd = 0x0003;
+
+    let buf = new Uint8Array(20);
+    buf[0] = cmd & 0xFF;
+    buf[1] = (cmd >> 8) & 0xFF;
+    if (type === "START") {
+        buf[2] = fileSize & 0xFF;
+        buf[3] = (fileSize >> 8) & 0xFF;
+        buf[4] = (fileSize >> 16) & 0xFF;
+        buf[5] = (fileSize >> 24) & 0xFF;
+    }
+    let crc = crc16ccitt(buf.slice(0, 18));
+    buf[18] = crc & 0xFF;
+    buf[19] = (crc >> 8) & 0xFF;
+
+    await commandChar.writeValue(buf);
+    addFirmwareLog(`Komut gönderildi: ${type} (CRC16-CCITT: 0x${crc.toString(16).toUpperCase()})`, 'info');
 }
 
 // 3. Firmware dosyasını 4KB sektörlere böl
@@ -1556,20 +1633,51 @@ function splitFirmwareToSectors(arrayBuffer, sectorSize = 4096) {
     return sectors;
 }
 
-// 4. NimBLEOta ile uyumlu CRC16 hesaplama fonksiyonu (nimbleota.py ile aynı algoritma)
-function crc16(buffer) {
-    // buffer: ArrayBuffer veya Uint8Array
-    let crc = 0xFFFF;
+// 4. NimBLEOta ile uyumlu CRC16-CCITT hesaplama fonksiyonu (nimbleota.py ile aynı algoritma)
+function crc16ccitt(buffer) {
+    let crc = 0;
     let arr = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
     for (let i = 0; i < arr.length; i++) {
-        crc ^= arr[i];
+        crc ^= arr[i] << 8;
         for (let j = 0; j < 8; j++) {
-            if (crc & 1) {
-                crc = (crc >> 1) ^ 0xA001;
+            if (crc & 0x8000) {
+                crc = (crc << 1) ^ 0x1021;
             } else {
-                crc = crc >> 1;
+                crc = crc << 1;
             }
+            crc &= 0xFFFF;
         }
     }
     return crc & 0xFFFF;
+}
+
+// NimBLEOta notification handler'ı (komut ve firmware için)
+function parseOtaNotification(data) {
+    // 20 byte: [0-1] ack/status, [2-3] cmd, [4-5] rsp/cur_sector, [18-19] crc
+    if (data.length !== 20) return { valid: false };
+    const crcData = data.slice(0, 18);
+    const crc = data[18] | (data[19] << 8);
+    const calcCrc = crc16ccitt(crcData);
+    return {
+        valid: crc === calcCrc,
+        status: data[0] | (data[1] << 8),
+        cmd: data[2] | (data[3] << 8),
+        rsp: data[4] | (data[5] << 8),
+        cur_sector: data[4] | (data[5] << 8),
+        raw: data,
+        crc,
+        calcCrc
+    };
+}
+
+// Hata kodu açıklamaları
+function otaStatusText(status) {
+    switch (status) {
+        case 0x0000: return 'Başarılı';
+        case 0x0001: return 'CRC Hatası';
+        case 0x0002: return 'Sektör Hatası';
+        case 0x0003: return 'Uzunluk Hatası';
+        case 0xFFFF: return 'CRC Kontrol Hatası (Notification)';
+        default: return 'Bilinmeyen Hata';
+    }
 }
