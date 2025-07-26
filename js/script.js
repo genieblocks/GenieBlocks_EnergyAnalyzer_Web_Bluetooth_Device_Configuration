@@ -1524,7 +1524,8 @@ async function startFirmwareUpload() {
         // Command characteristic notification listener
         commandChar.addEventListener('characteristicvaluechanged', (event) => {
             const value = event.target.value;
-            const data = new Uint8Array(value.buffer);
+            // DÜZELTME: DataView'ın offset ve length'ini kullan!
+            const data = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
             addFirmwareLog('Command notification geldi: ' + Array.from(data).map(x=>x.toString(16).padStart(2,'0')).join(' '), 'info');
             cmdQueue.push(data);
         });
@@ -1532,7 +1533,8 @@ async function startFirmwareUpload() {
         // Firmware characteristic notification listener (Python ile aynı - progress karakteristiği yok)
         firmwareChar.addEventListener('characteristicvaluechanged', (event) => {
             const value = event.target.value;
-            const data = new Uint8Array(value.buffer);
+            // DÜZELTME: DataView'ın offset ve length'ini kullan!
+            const data = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
             fwQueue.push(data);
         });
 
