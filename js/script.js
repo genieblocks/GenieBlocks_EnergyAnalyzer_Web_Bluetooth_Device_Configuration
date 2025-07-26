@@ -1766,7 +1766,7 @@ function parseFirmwareNotification(data) {
     const curSector = (data[5] << 8) | data[4];
     const crc = (data[19] << 8) | data[18];
     
-    const calcCrc = crc16ccitt(data.slice(0, 18));
+    const calcCrc = crc16ccitt(0, data, 18);
     const isValid = crc === calcCrc;
     
     return {
@@ -1788,7 +1788,7 @@ function parseCommandNotification(data) {
     const rsp = (data[5] << 8) | data[4];
     const crc = (data[19] << 8) | data[18];
     
-    const calcCrc = crc16ccitt(data.slice(0, 18));
+    const calcCrc = crc16ccitt(0, data, 18);
     const isValid = crc === calcCrc;
     
     return {
