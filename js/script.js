@@ -1535,6 +1535,9 @@ async function startFirmwareUpload() {
             const value = event.target.value;
             // DÜZELTME: DataView'ın offset ve length'ini kullan!
             const data = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+            addFirmwareLog('Firmware notification geldi: ' + Array.from(data).map(x=>x.toString(16).padStart(2,'0')).join(' '), 'info');
+            const parsed = parseFirmwareNotification(data);
+            addFirmwareLog('Firmware notification parse: ' + JSON.stringify(parsed), 'info');
             fwQueue.push(data);
         });
 
@@ -1576,13 +1579,12 @@ async function startFirmwareUpload() {
             const sector = sectors[i];
             const sectorArray = new Uint8Array(sector);
             const crc = crc16ccitt(0, sectorArray, sectorArray.length);
-            
+            addFirmwareLog(`Sektör #${i + 1} CRC: 0x${crc.toString(16).toUpperCase()} (uzunluk: ${sectorArray.length})`, 'info');
             // CRC'yi sektörün sonuna ekle (2 byte - Python ile aynı)
             const sectorWithCrc = new Uint8Array(sectorArray.length + 2);
             sectorWithCrc.set(sectorArray);
             sectorWithCrc[sectorArray.length] = crc & 0xFF;
             sectorWithCrc[sectorArray.length + 1] = (crc >> 8) & 0xFF;
-            
             sectors[i] = sectorWithCrc.buffer;
         }
 
@@ -1625,6 +1627,7 @@ async function startFirmwareUpload() {
                 packet.set(chunk, 3);
                 
                 addFirmwareLog(`Chunk ${chunkIdx + 1}/${numChunks} gönderiliyor... (${packet.length} byte)`, 'info');
+                addFirmwareLog(`Chunk veri (ilk 16 byte): ${Array.from(packet.slice(0, 16)).map(x=>x.toString(16).padStart(2,'0')).join(' ')}...`, 'info');
                 await firmwareChar.writeValue(packet);
             }
 
