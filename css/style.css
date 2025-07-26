@@ -456,15 +456,34 @@ button:disabled {
 }
 
 #firmware-log-content {
-    background: white;
-    border-radius: 8px;
-    padding: 16px;
-    height: 200px;
+    max-height: 200px;
     overflow-y: auto;
-    font-family: monospace;
-    font-size: 0.9em;
-    line-height: 1.5;
-    color: #333;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    line-height: 1.4;
+}
+
+.log-entry {
+    margin-bottom: 4px;
+    padding: 2px 0;
+}
+
+.log-entry.info {
+    color: #495057;
+}
+
+.log-entry.success {
+    color: #28a745;
+    font-weight: 500;
+}
+
+.log-entry.error {
+    color: #dc3545;
+    font-weight: 500;
 }
 
 /* Tab Container Styles */

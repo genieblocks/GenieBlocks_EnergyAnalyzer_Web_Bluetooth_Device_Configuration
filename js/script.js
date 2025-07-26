@@ -1218,6 +1218,13 @@ if (firmwareFileInput) {
         firmwareFilename.textContent = file.name;
         firmwareSize.textContent = formatFileSize(file.size);
         firmwareDetails.style.display = 'block';
+        
+        // Dosya seçildikten sonra "Yüklemeyi Başlat" butonunu aktif et
+        const startUploadBtn = document.getElementById('start-upload');
+        if (startUploadBtn) {
+            startUploadBtn.disabled = false;
+        }
+        
         console.log('Seçilen dosya:', file.name, file.size);
     });
 }
@@ -1297,3 +1304,132 @@ document.addEventListener('DOMContentLoaded', () => {
         firmwareFileInput.setAttribute('disabled', 'disabled');
     }
 });
+
+// Firmware güncelleme için BLE bağlantı kontrolü
+function checkFirmwareConnection() {
+    if (!device) {
+        addFirmwareLog('Hata: Cihaza bağlı değil! Önce cihaza bağlanın.', 'error');
+        return false;
+    }
+    
+    if (!device.gatt || !device.gatt.connected) {
+        addFirmwareLog('Hata: Bluetooth bağlantısı kopuk! Lütfen tekrar bağlanın.', 'error');
+        return false;
+    }
+    
+    addFirmwareLog('Bağlantı kontrolü başarılı.', 'success');
+    return true;
+}
+
+// Firmware log sistemi
+function addFirmwareLog(message, type = 'info') {
+    const logContent = document.getElementById('firmware-log-content');
+    if (!logContent) return;
+    
+    const timestamp = new Date().toLocaleTimeString();
+    const typeClass = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+    const logEntry = `<div class="log-entry ${typeClass}">[${timestamp}] ${message}</div>`;
+    
+    logContent.innerHTML += logEntry;
+    logContent.scrollTop = logContent.scrollHeight;
+}
+
+// Firmware progress bar güncelleme
+function updateFirmwareProgress(percentage) {
+    const progressBar = document.querySelector('.progress');
+    const progressText = document.querySelector('.progress-text');
+    const progressContainer = document.querySelector('.progress-container');
+    
+    if (progressBar && progressText && progressContainer) {
+        progressBar.style.width = percentage + '%';
+        progressText.textContent = '%' + percentage;
+        
+        if (percentage > 0 && progressContainer.style.display === 'none') {
+            progressContainer.style.display = 'block';
+        }
+    }
+}
+
+// Firmware butonları için event listener'lar
+document.addEventListener('DOMContentLoaded', () => {
+    const startUploadBtn = document.getElementById('start-upload');
+    const cancelUploadBtn = document.getElementById('cancel-upload');
+    const clearLogBtn = document.getElementById('clear-firmware-log');
+    
+    if (startUploadBtn) {
+        startUploadBtn.addEventListener('click', startFirmwareUpload);
+    }
+    
+    if (cancelUploadBtn) {
+        cancelUploadBtn.addEventListener('click', cancelFirmwareUpload);
+    }
+    
+    if (clearLogBtn) {
+        clearLogBtn.addEventListener('click', clearFirmwareLog);
+    }
+});
+
+// Firmware upload başlatma
+async function startFirmwareUpload() {
+    addFirmwareLog('Firmware güncelleme başlatılıyor...', 'info');
+    
+    // Bağlantı kontrolü
+    if (!checkFirmwareConnection()) {
+        return;
+    }
+    
+    // Dosya kontrolü
+    const file = firmwareFileInput.files[0];
+    if (!file) {
+        addFirmwareLog('Hata: Lütfen önce bir firmware dosyası seçin!', 'error');
+        return;
+    }
+    
+    addFirmwareLog(`Seçilen dosya: ${file.name} (${formatFileSize(file.size)})`, 'info');
+    
+    // Butonları disable et
+    document.getElementById('start-upload').disabled = true;
+    document.getElementById('cancel-upload').disabled = false;
+    
+    // Progress bar'ı göster
+    updateFirmwareProgress(0);
+    
+    // TODO: BLE üzerinden firmware gönderme işlemi burada yapılacak
+    addFirmwareLog('Firmware gönderme işlemi henüz implement edilmedi.', 'info');
+    
+    // Test için progress bar'ı güncelle
+    setTimeout(() => {
+        updateFirmwareProgress(50);
+        addFirmwareLog('Test: Progress %50', 'info');
+    }, 1000);
+    
+    setTimeout(() => {
+        updateFirmwareProgress(100);
+        addFirmwareLog('Test: Progress %100 tamamlandı', 'success');
+        
+        // Butonları reset et
+        document.getElementById('start-upload').disabled = false;
+        document.getElementById('cancel-upload').disabled = true;
+    }, 2000);
+}
+
+// Firmware upload iptal etme
+function cancelFirmwareUpload() {
+    addFirmwareLog('Firmware güncelleme iptal edildi.', 'info');
+    
+    // Progress bar'ı sıfırla
+    updateFirmwareProgress(0);
+    
+    // Butonları reset et
+    document.getElementById('start-upload').disabled = false;
+    document.getElementById('cancel-upload').disabled = true;
+}
+
+// Firmware log temizleme
+function clearFirmwareLog() {
+    const logContent = document.getElementById('firmware-log-content');
+    if (logContent) {
+        logContent.innerHTML = '';
+        addFirmwareLog('Log temizlendi.', 'info');
+    }
+}
