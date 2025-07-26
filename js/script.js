@@ -1470,10 +1470,9 @@ async function startFirmwareUpload() {
             addFirmwareLog(`Karakteristik ${i + 1}: ${uuid} (${char.properties.join(', ')})`, 'info');
         }
         
-        // Beklenen UUID'leri kontrol et
+        // Beklenen UUID'leri kontrol et (Python ile aynı)
         const expectedUuids = {
             'firmware': OTA_RECV_CHARACTERISTIC_UUID,
-            'progress': OTA_PROGRESS_CHARACTERISTIC_UUID,
             'command': OTA_COMMAND_CHARACTERISTIC_UUID
         };
         
@@ -1494,14 +1493,7 @@ async function startFirmwareUpload() {
             throw error;
         }
         
-        try {
-            addFirmwareLog(`Progress karakteristiği aranıyor: ${OTA_PROGRESS_CHARACTERISTIC_UUID}`, 'info');
-            progressChar = await otaService.getCharacteristic(OTA_PROGRESS_CHARACTERISTIC_UUID);
-            addFirmwareLog('Progress karakteristiği bulundu.', 'success');
-        } catch (error) {
-            addFirmwareLog(`Progress karakteristiği bulunamadı: ${error.message}`, 'error');
-            throw error;
-        }
+
         
         try {
             addFirmwareLog(`Command karakteristiği aranıyor: ${OTA_COMMAND_CHARACTERISTIC_UUID}`, 'info');
@@ -1527,8 +1519,8 @@ async function startFirmwareUpload() {
             cmdQueue.push(data);
         });
 
-        // Firmware characteristic notification listener  
-        progressChar.addEventListener('characteristicvaluechanged', (event) => {
+        // Firmware characteristic notification listener (Python ile aynı - progress karakteristiği yok)
+        firmwareChar.addEventListener('characteristicvaluechanged', (event) => {
             const value = event.target.value;
             const data = new Uint8Array(value.buffer);
             fwQueue.push(data);
@@ -1536,7 +1528,7 @@ async function startFirmwareUpload() {
 
         // Notification'ları başlat
         await commandChar.startNotifications();
-        await progressChar.startNotifications();
+        await firmwareChar.startNotifications();
 
         // START komutu gönder ve ACK bekle (Python ile aynı mantık)
         await sendOtaCommandNimbleOta('START', commandChar, file.size);
