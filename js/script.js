@@ -1415,8 +1415,28 @@ function cancelFirmwareUpload() {
             .then(() => addFirmwareLog('CANCEL komutu gönderildi.', 'info'))
             .catch(() => addFirmwareLog('CANCEL komutu gönderilemedi.', 'error'));
     }
+    // Cihaza restart komutu gönder
+    sendDeviceRestartCommand();
     updateFirmwareProgress(0);
     setFirmwareUiBusy(false);
+    stopFirmwareTimer();
+}
+
+// Cihaza restart komutu gönderen fonksiyon
+async function sendDeviceRestartCommand() {
+    try {
+        if (!device || !device.gatt.connected) {
+            addFirmwareLog('Cihaz bağlı değil, restart komutu gönderilemedi.', 'error');
+            return;
+        }
+        const server = device.gatt;
+        let service = await server.getPrimaryService(SYSTEM_SERVICE_UUID);
+        let characteristic = await service.getCharacteristic(COMMIT_CHAR_UUID);
+        await characteristic.writeValue(Uint8Array.of(0x01));
+        addFirmwareLog('Cihaza restart komutu gönderildi.', 'info');
+    } catch (err) {
+        addFirmwareLog('Cihaza restart komutu gönderilemedi: ' + err.message, 'error');
+    }
 }
 
 // NimBLEOta protokolüne uygun firmware upload fonksiyonu
@@ -1424,6 +1444,7 @@ async function startFirmwareUpload() {
     addFirmwareLog('Firmware güncelleme başlatılıyor...', 'info');
     firmwareUploadCancelled = false;
     setFirmwareUiBusy(true);
+    startFirmwareTimer();
 
     if (!checkFirmwareConnection()) {
         setFirmwareUiBusy(false);
@@ -1671,12 +1692,14 @@ async function startFirmwareUpload() {
         updateFirmwareProgress(100);
         flashFirmwareLogBg('success');
         setFirmwareUiBusy(false);
+        stopFirmwareTimer();
         
     } catch (err) {
         addFirmwareLog('Hata: ' + err.message, 'error');
         updateFirmwareProgress(0);
         flashFirmwareLogBg('error');
         setFirmwareUiBusy(false);
+        stopFirmwareTimer();
     } finally {
         window._otaCommandChar = null;
     }
@@ -1811,5 +1834,28 @@ function otaStatusText(status) {
         case 0x0003: return 'Uzunluk Hatası';
         case 0xFFFF: return 'CRC Kontrol Hatası (Notification)';
         default: return 'Bilinmeyen Hata';
+    }
+}
+
+let firmwareUploadTimer = null;
+let firmwareUploadStartTime = null;
+
+function startFirmwareTimer() {
+    firmwareUploadStartTime = Date.now();
+    const timerValue = document.getElementById('firmware-timer-value');
+    if (firmwareUploadTimer) clearInterval(firmwareUploadTimer);
+    timerValue.textContent = '00:00';
+    firmwareUploadTimer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - firmwareUploadStartTime) / 1000);
+        const min = String(Math.floor(elapsed / 60)).padStart(2, '0');
+        const sec = String(elapsed % 60).padStart(2, '0');
+        timerValue.textContent = `${min}:${sec}`;
+    }, 1000);
+}
+
+function stopFirmwareTimer() {
+    if (firmwareUploadTimer) {
+        clearInterval(firmwareUploadTimer);
+        firmwareUploadTimer = null;
     }
 }

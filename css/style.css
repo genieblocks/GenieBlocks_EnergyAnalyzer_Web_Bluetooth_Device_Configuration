@@ -604,3 +604,17 @@ button:disabled {
     text-align: center;
 }
 }
+
+.firmware-timer {
+  margin: 10px 0 0 0;
+  font-size: 1.08em;
+  color: #444;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+#firmware-timer-value {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 1.08em;
+  color: #00a7e9;
+  margin-left: 4px;
+}
