@@ -1547,7 +1547,7 @@ async function startFirmwareUpload() {
             const value = event.target.value;
             // DÜZELTME: DataView'ın offset ve length'ini kullan!
             const data = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
-            addFirmwareLog('Command notification geldi: ' + Array.from(data).map(x=>x.toString(16).padStart(2,'0')).join(' '), 'info');
+            // addFirmwareLog('Command notification geldi: ' + Array.from(data).map(x=>x.toString(16).padStart(2,'0')).join(' '), 'info');
             cmdQueue.push(data);
         });
 
@@ -1556,20 +1556,20 @@ async function startFirmwareUpload() {
             const value = event.target.value;
             // DÜZELTME: DataView'ın offset ve length'ini kullan!
             const data = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
-            addFirmwareLog('Firmware notification geldi: ' + Array.from(data).map(x=>x.toString(16).padStart(2,'0')).join(' '), 'info');
-            const parsed = parseFirmwareNotification(data);
-            addFirmwareLog('Firmware notification parse: ' + JSON.stringify(parsed), 'info');
+            // addFirmwareLog('Firmware notification geldi: ' + Array.from(data).map(x=>x.toString(16).padStart(2,'0')).join(' '), 'info');
+            // const parsed = parseFirmwareNotification(data);
+            // addFirmwareLog('Firmware notification parse: ' + JSON.stringify(parsed), 'info');
             fwQueue.push(data);
         });
 
         // ÖNCE notification'ları başlat (Python ile aynı sıra)
         addFirmwareLog('Command notification başlatılıyor...', 'info');
         await commandChar.startNotifications();
-        addFirmwareLog('Command notification başlatıldı.', 'info');
+        // addFirmwareLog('Command notification başlatıldı.', 'info');
         
         addFirmwareLog('Firmware notification başlatılıyor...', 'info');
         await firmwareChar.startNotifications();
-        addFirmwareLog('Firmware notification başlatıldı.', 'info');
+        // addFirmwareLog('Firmware notification başlatıldı.', 'info');
 
         // SONRA START komutu gönder ve ACK bekle (Python ile aynı mantık)
         await sendOtaCommandNimbleOta('START', commandChar, file.size);
@@ -1615,6 +1615,7 @@ async function startFirmwareUpload() {
                 addFirmwareLog('Kullanıcı tarafından iptal edildi. İşlem durduruldu.', 'error');
                 updateFirmwareProgress(0);
                 setFirmwareUiBusy(false);
+                stopFirmwareTimer();
                 return;
             }
 
@@ -1624,8 +1625,6 @@ async function startFirmwareUpload() {
             addFirmwareLog(`Sektör #${secIdx + 1} gönderiliyor... (${sectorArray.length} byte)`, 'info');
 
             // Sektörü chunk'lara böl (Python ile aynı mantık)
-            // React kodunda: let to_read = packet_size - 3; // packet_size = 510
-            // Bu durumda chunk boyutu = 507 byte
             const MAX_CHUNK_SIZE = 507; // React ile aynı
             const numChunks = Math.ceil(sectorArray.length / MAX_CHUNK_SIZE);
             
@@ -1647,8 +1646,8 @@ async function startFirmwareUpload() {
                 packet.set(header);
                 packet.set(chunk, 3);
                 
-                addFirmwareLog(`Chunk ${chunkIdx + 1}/${numChunks} gönderiliyor... (${packet.length} byte)`, 'info');
-                addFirmwareLog(`Chunk veri (ilk 16 byte): ${Array.from(packet.slice(0, 16)).map(x=>x.toString(16).padStart(2,'0')).join(' ')}...`, 'info');
+                // addFirmwareLog(`Chunk ${chunkIdx + 1}/${numChunks} gönderiliyor... (${packet.length} byte)`, 'info');
+                // addFirmwareLog(`Chunk veri (ilk 16 byte): ${Array.from(packet.slice(0, 16)).map(x=>x.toString(16).padStart(2,'0')).join(' ')}...`, 'info');
                 await firmwareChar.writeValue(packet);
             }
 
@@ -1677,8 +1676,8 @@ async function startFirmwareUpload() {
                 secIdx--; // Aynı sektörü tekrar gönder
                 continue;
             } else if (ack === 0x0002) { // FW_ACK_SECTOR_ERROR
-                addFirmwareLog(`Sektör Hatası, sektör #${rspSector} gönderiliyor...`, 'error');
-                secIdx = rspSector; // Belirtilen sektörden devam et
+                addFirmwareLog(`Sektör Hatası, sektör #${rspSector + 1} gönderiliyor...`, 'error');
+                secIdx = rspSector - 1; // rspSector 1-based ise, secIdx 0-based yap
                 continue;
             } else {
                 addFirmwareLog(`Bilinmeyen hata: 0x${ack.toString(16).toUpperCase()}`, 'error');
