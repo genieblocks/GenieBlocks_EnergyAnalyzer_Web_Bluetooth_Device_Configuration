@@ -1685,27 +1685,38 @@ const OTA_RECV_CHARACTERISTIC_UUID = 0x8020;
 const OTA_PROGRESS_CHARACTERISTIC_UUID = 0x8021;
 const OTA_COMMAND_CHARACTERISTIC_UUID = 0x8022;
 
-// 2. NimBLEOta komut gönderme fonksiyonu
+// 2. NimBLEOta komut gönderme fonksiyonu (Python ile birebir aynı)
 async function sendOtaCommandNimbleOta(type, commandChar, fileSize = 0) {
     let cmd = 0x0001; // START
     if (type === "END") cmd = 0x0002;
     if (type === "CANCEL") cmd = 0x0003;
 
     let buf = new Uint8Array(20);
-    buf[0] = cmd & 0xFF;
-    buf[1] = (cmd >> 8) & 0xFF;
+    // Python: command[0:2] = START_COMMAND.to_bytes(2, byteorder='little')
+    buf[0] = cmd & 0xFF;        // little endian - low byte first
+    buf[1] = (cmd >> 8) & 0xFF; // little endian - high byte second
+    
     if (type === "START") {
-        buf[2] = fileSize & 0xFF;
-        buf[3] = (fileSize >> 8) & 0xFF;
-        buf[4] = (fileSize >> 16) & 0xFF;
-        buf[5] = (fileSize >> 24) & 0xFF;
+        // Python: command[2:6] = file_size.to_bytes(4, byteorder='little')
+        buf[2] = fileSize & 0xFF;           // little endian - byte 0
+        buf[3] = (fileSize >> 8) & 0xFF;    // little endian - byte 1
+        buf[4] = (fileSize >> 16) & 0xFF;   // little endian - byte 2
+        buf[5] = (fileSize >> 24) & 0xFF;   // little endian - byte 3
     }
+    
+    // Python: crc16 = crc16_ccitt(command[0:18])
     let crc = crc16ccitt(buf.slice(0, 18));
-    buf[18] = crc & 0xFF;
-    buf[19] = (crc >> 8) & 0xFF;
+    
+    // Python: command[18:20] = crc16.to_bytes(2, byteorder='little')
+    buf[18] = crc & 0xFF;        // little endian - low byte first
+    buf[19] = (crc >> 8) & 0xFF; // little endian - high byte second
 
     await commandChar.writeValue(buf);
     addFirmwareLog(`Komut gönderildi: ${type} (CRC16-CCITT: 0x${crc.toString(16).toUpperCase()})`, 'info');
+    
+    // Debug: Komut buffer'ının içeriğini logla
+    const debugHex = Array.from(buf).map(b => b.toString(16).padStart(2, '0')).join(' ');
+    addFirmwareLog(`Debug - Komut buffer: ${debugHex}`, 'info');
 }
 
 // 3. Firmware dosyasını 4KB sektörlere böl
