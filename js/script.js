@@ -136,7 +136,8 @@ async function connect() {
     optionalServices: [
       LORAWAN_SERVICE_UUID,
       '0000a005-0000-1000-8000-00805f9b34fb', // Commit karakteristiği
-      window.MODBUS_SERVICE_UUID // Modbus servisi
+      window.MODBUS_SERVICE_UUID, // Modbus servisi
+      OTA_SERVICE_UUID // OTA servisi eklendi
     ]
   });
   logMsg('Cihaz seçildi: ' + device.name);
