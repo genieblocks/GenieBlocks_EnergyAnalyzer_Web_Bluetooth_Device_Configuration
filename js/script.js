@@ -1601,12 +1601,9 @@ async function startFirmwareUpload() {
             addFirmwareLog(`Sektör #${secIdx + 1} gönderiliyor... (${sectorArray.length} byte)`, 'info');
 
             // Sektörü chunk'lara böl (Python ile aynı mantık)
-            // Python'da: max_bytes = min(512, client.mtu_size - 3) - 3
-            // Web Bluetooth'da MTU genellikle 23 byte, overhead 3 byte
-            const MTU_SIZE = 23;
-            const BLE_OVERHEAD = 3;
-            const HEADER_SIZE = 3;
-            const MAX_CHUNK_SIZE = Math.min(512, MTU_SIZE - BLE_OVERHEAD - HEADER_SIZE);
+            // React kodunda: let to_read = packet_size - 3; // packet_size = 510
+            // Bu durumda chunk boyutu = 507 byte
+            const MAX_CHUNK_SIZE = 507; // React ile aynı
             const numChunks = Math.ceil(sectorArray.length / MAX_CHUNK_SIZE);
             
             for (let chunkIdx = 0; chunkIdx < numChunks; chunkIdx++) {
@@ -1627,6 +1624,7 @@ async function startFirmwareUpload() {
                 packet.set(header);
                 packet.set(chunk, 3);
                 
+                addFirmwareLog(`Chunk ${chunkIdx + 1}/${numChunks} gönderiliyor... (${packet.length} byte)`, 'info');
                 await firmwareChar.writeValue(packet);
             }
 
