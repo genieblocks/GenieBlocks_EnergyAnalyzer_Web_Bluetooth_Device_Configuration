@@ -1575,7 +1575,7 @@ async function startFirmwareUpload() {
         for (let i = 0; i < sectors.length; i++) {
             const sector = sectors[i];
             const sectorArray = new Uint8Array(sector);
-            const crc = crc16ccitt(sectorArray);
+            const crc = crc16ccitt(0, sectorArray, sectorArray.length);
             
             // CRC'yi sektörün sonuna ekle (2 byte - Python ile aynı)
             const sectorWithCrc = new Uint8Array(sectorArray.length + 2);
