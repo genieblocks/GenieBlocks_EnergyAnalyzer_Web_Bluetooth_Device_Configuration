@@ -1467,7 +1467,16 @@ async function startFirmwareUpload() {
             const char = characteristics[i];
             const uuid = char.uuid;
             charMap[uuid] = char;
-            addFirmwareLog(`Karakteristik ${i + 1}: ${uuid} (${char.properties.join(', ')})`, 'info');
+            
+            // properties bir object, array değil
+            const properties = [];
+            if (char.properties.read) properties.push('read');
+            if (char.properties.write) properties.push('write');
+            if (char.properties.writeWithoutResponse) properties.push('writeWithoutResponse');
+            if (char.properties.notify) properties.push('notify');
+            if (char.properties.indicate) properties.push('indicate');
+            
+            addFirmwareLog(`Karakteristik ${i + 1}: ${uuid} (${properties.join(', ')})`, 'info');
         }
         
         // Beklenen UUID'leri kontrol et (Python ile aynı)
