@@ -1321,6 +1321,35 @@ function checkFirmwareConnection() {
     return true;
 }
 
+// Firmware yükleme sırasında input ve butonları yönet
+function setFirmwareUiBusy(isBusy) {
+    // Dosya inputu ve label
+    firmwareFileInput.disabled = isBusy;
+    document.querySelector('.file-input-label').classList.toggle('disabled', isBusy);
+
+    // Butonlar
+    document.getElementById('start-upload').disabled = isBusy;
+    document.getElementById('cancel-upload').disabled = !isBusy;
+}
+
+// Log ve progress bar'ı otomatik en alta kaydır
+function scrollFirmwareLogToBottom() {
+    const logContent = document.getElementById('firmware-log-content');
+    if (logContent) logContent.scrollTop = logContent.scrollHeight;
+}
+
+// Kısa süreli görsel bildirim (arka plan animasyonu)
+function flashFirmwareLogBg(type) {
+    const logContent = document.getElementById('firmware-log-content');
+    if (!logContent) return;
+    let color = type === 'success' ? '#d2f8e5' : type === 'error' ? '#ffeaea' : '#f8f9fa';
+    logContent.style.transition = 'background 0.4s';
+    logContent.style.background = color;
+    setTimeout(() => {
+        logContent.style.background = '#f8f9fa';
+    }, 700);
+}
+
 // Firmware log sistemi
 function addFirmwareLog(message, type = 'info') {
     const logContent = document.getElementById('firmware-log-content');
@@ -1331,7 +1360,8 @@ function addFirmwareLog(message, type = 'info') {
     const logEntry = `<div class="log-entry ${typeClass}">[${timestamp}] ${message}</div>`;
     
     logContent.innerHTML += logEntry;
-    logContent.scrollTop = logContent.scrollHeight;
+    scrollFirmwareLogToBottom();
+    if (type === 'success' || type === 'error') flashFirmwareLogBg(type);
 }
 
 // Firmware progress bar güncelleme
@@ -1369,60 +1399,125 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Firmware upload başlatma
-async function startFirmwareUpload() {
-    addFirmwareLog('Firmware güncelleme başlatılıyor...', 'info');
-    
-    // Bağlantı kontrolü
-    if (!checkFirmwareConnection()) {
-        return;
+// 512 byte'lık paketlere bölüp gönder
+async function sendSector(sector, recvChar) {
+    const PACKET_SIZE = 512;
+    let arr = new Uint8Array(sector);
+    for (let i = 0; i < arr.length; i += PACKET_SIZE) {
+        let chunk = arr.slice(i, i + PACKET_SIZE);
+        await recvChar.writeValue(chunk);
     }
-    
-    // Dosya kontrolü
-    const file = firmwareFileInput.files[0];
-    if (!file) {
-        addFirmwareLog('Hata: Lütfen önce bir firmware dosyası seçin!', 'error');
-        return;
-    }
-    
-    addFirmwareLog(`Seçilen dosya: ${file.name} (${formatFileSize(file.size)})`, 'info');
-    
-    // Butonları disable et
-    document.getElementById('start-upload').disabled = true;
-    document.getElementById('cancel-upload').disabled = false;
-    
-    // Progress bar'ı göster
-    updateFirmwareProgress(0);
-    
-    // TODO: BLE üzerinden firmware gönderme işlemi burada yapılacak
-    addFirmwareLog('Firmware gönderme işlemi henüz implement edilmedi.', 'info');
-    
-    // Test için progress bar'ı güncelle
-    setTimeout(() => {
-        updateFirmwareProgress(50);
-        addFirmwareLog('Test: Progress %50', 'info');
-    }, 1000);
-    
-    setTimeout(() => {
-        updateFirmwareProgress(100);
-        addFirmwareLog('Test: Progress %100 tamamlandı', 'success');
-        
-        // Butonları reset et
-        document.getElementById('start-upload').disabled = false;
-        document.getElementById('cancel-upload').disabled = true;
-    }, 2000);
 }
+
+// Cihazdan ACK bekle (progressChar üzerinden)
+// NimBLEOta'da genellikle progressChar'dan notify ile cevap gelir
+async function waitForAck(progressChar, expectedCrc, timeout = 5000) {
+    return new Promise((resolve, reject) => {
+        let timer;
+        function onNotify(event) {
+            const value = event.target.value;
+            // CRC16 değeri 2 byte olarak gelir
+            const crc = value.getUint16(0, true);
+            if (crc === expectedCrc) {
+                clearTimeout(timer);
+                progressChar.removeEventListener('characteristicvaluechanged', onNotify);
+                resolve();
+            }
+        }
+        progressChar.addEventListener('characteristicvaluechanged', onNotify);
+        progressChar.startNotifications();
+
+        timer = setTimeout(() => {
+            progressChar.removeEventListener('characteristicvaluechanged', onNotify);
+            reject(new Error('ACK (CRC) beklenirken zaman aşımı!'));
+        }, timeout);
+    });
+}
+
+// Firmware upload işlemi sırasında iptal kontrolü için global değişken
+let firmwareUploadCancelled = false;
 
 // Firmware upload iptal etme
 function cancelFirmwareUpload() {
-    addFirmwareLog('Firmware güncelleme iptal edildi.', 'info');
-    
-    // Progress bar'ı sıfırla
+    firmwareUploadCancelled = true;
+    addFirmwareLog('Firmware güncelleme iptal edildi. Cihaza CANCEL komutu gönderiliyor...', 'info');
+    // Eğer commandChar erişimi varsa CANCEL komutu gönder
+    if (window._otaCommandChar) {
+        sendOtaCommand('CANCEL', window._otaCommandChar)
+            .then(() => addFirmwareLog('CANCEL komutu gönderildi.', 'info'))
+            .catch(() => addFirmwareLog('CANCEL komutu gönderilemedi.', 'error'));
+    }
     updateFirmwareProgress(0);
-    
-    // Butonları reset et
-    document.getElementById('start-upload').disabled = false;
-    document.getElementById('cancel-upload').disabled = true;
+    setFirmwareUiBusy(false);
+}
+
+// startFirmwareUpload fonksiyonunda iptal ve hata yönetimi
+async function startFirmwareUpload() {
+    addFirmwareLog('Firmware güncelleme başlatılıyor...', 'info');
+    firmwareUploadCancelled = false;
+    setFirmwareUiBusy(true);
+
+    if (!checkFirmwareConnection()) {
+        setFirmwareUiBusy(false);
+        return;
+    }
+
+    const file = firmwareFileInput.files[0];
+    if (!file) {
+        addFirmwareLog('Hata: Lütfen önce bir firmware dosyası seçin!', 'error');
+        setFirmwareUiBusy(false);
+        return;
+    }
+
+    addFirmwareLog(`Seçilen dosya: ${file.name} (${formatFileSize(file.size)})`, 'info');
+    updateFirmwareProgress(0);
+
+    try {
+        const server = device.gatt;
+        const otaService = await server.getPrimaryService(OTA_SERVICE_UUID);
+        const recvChar = await otaService.getCharacteristic(OTA_RECV_CHARACTERISTIC_UUID);
+        const progressChar = await otaService.getCharacteristic(OTA_PROGRESS_CHARACTERISTIC_UUID);
+        const commandChar = await otaService.getCharacteristic(OTA_COMMAND_CHARACTERISTIC_UUID);
+
+        window._otaCommandChar = commandChar;
+
+        addFirmwareLog('OTA servis ve karakteristikleri bulundu.', 'success');
+        await sendOtaCommand('START', commandChar);
+
+        const arrayBuffer = await file.arrayBuffer();
+        const sectors = splitFirmwareToSectors(arrayBuffer, 4096);
+        addFirmwareLog(`Toplam sektör sayısı: ${sectors.length}`, 'info');
+
+        for (let i = 0; i < sectors.length; i++) {
+            if (firmwareUploadCancelled) {
+                addFirmwareLog('Kullanıcı tarafından iptal edildi. İşlem durduruldu.', 'error');
+                updateFirmwareProgress(0);
+                setFirmwareUiBusy(false);
+                return;
+            }
+            const sector = sectors[i];
+            const crc = crc16(sector);
+            addFirmwareLog(`Sektör #${i + 1} gönderiliyor...`, 'info');
+            await sendSector(sector, recvChar);
+            addFirmwareLog(`Sektör #${i + 1} gönderildi, ACK (CRC16: 0x${crc.toString(16).toUpperCase()}) bekleniyor...`, 'info');
+            await waitForAck(progressChar, crc);
+            addFirmwareLog(`Sektör #${i + 1} için ACK alındı.`, 'success');
+            updateFirmwareProgress(Math.round(((i + 1) / sectors.length) * 100));
+        }
+
+        await sendOtaCommand('END', commandChar);
+        addFirmwareLog('Firmware güncelleme tamamlandı!', 'success');
+        updateFirmwareProgress(100);
+        flashFirmwareLogBg('success');
+        setFirmwareUiBusy(false);
+    } catch (err) {
+        addFirmwareLog('Hata: ' + err, 'error');
+        updateFirmwareProgress(0);
+        flashFirmwareLogBg('error');
+        setFirmwareUiBusy(false);
+    } finally {
+        window._otaCommandChar = null;
+    }
 }
 
 // Firmware log temizleme
@@ -1432,4 +1527,48 @@ function clearFirmwareLog() {
         logContent.innerHTML = '';
         addFirmwareLog('Log temizlendi.', 'info');
     }
+}
+
+// 1. OTA servis ve karakteristik UUID'leri
+const OTA_SERVICE_UUID = 0x8018;
+const OTA_RECV_CHARACTERISTIC_UUID = 0x8020;
+const OTA_PROGRESS_CHARACTERISTIC_UUID = 0x8021;
+const OTA_COMMAND_CHARACTERISTIC_UUID = 0x8022;
+
+// 2. START komutu gönderme fonksiyonu
+async function sendOtaCommand(command, commandChar) {
+    // command: string (ör: "START", "END", "CANCEL", "REBOOT")
+    // commandChar: BluetoothRemoteGATTCharacteristic
+    const encoder = new TextEncoder();
+    const data = encoder.encode(command);
+    await commandChar.writeValue(data);
+    addFirmwareLog(`Komut gönderildi: ${command}`, 'info');
+}
+
+// 3. Firmware dosyasını 4KB sektörlere böl
+function splitFirmwareToSectors(arrayBuffer, sectorSize = 4096) {
+    const sectors = [];
+    const total = arrayBuffer.byteLength;
+    for (let i = 0; i < total; i += sectorSize) {
+        sectors.push(arrayBuffer.slice(i, i + sectorSize));
+    }
+    return sectors;
+}
+
+// 4. NimBLEOta ile uyumlu CRC16 hesaplama fonksiyonu (nimbleota.py ile aynı algoritma)
+function crc16(buffer) {
+    // buffer: ArrayBuffer veya Uint8Array
+    let crc = 0xFFFF;
+    let arr = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+    for (let i = 0; i < arr.length; i++) {
+        crc ^= arr[i];
+        for (let j = 0; j < 8; j++) {
+            if (crc & 1) {
+                crc = (crc >> 1) ^ 0xA001;
+            } else {
+                crc = crc >> 1;
+            }
+        }
+    }
+    return crc & 0xFFFF;
 }
