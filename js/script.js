@@ -1705,7 +1705,7 @@ async function sendOtaCommandNimbleOta(type, commandChar, fileSize = 0) {
     }
     
     // Python: crc16 = crc16_ccitt(command[0:18])
-    let crc = crc16ccitt(buf.slice(0, 18));
+    let crc = crc16ccitt(0, buf, 18);
     
     // Python: command[18:20] = crc16.to_bytes(2, byteorder='little')
     buf[18] = crc & 0xFF;        // little endian - low byte first
@@ -1729,19 +1729,17 @@ function splitFirmwareToSectors(arrayBuffer, sectorSize = 4096) {
     return sectors;
 }
 
-// 4. NimBLEOta ile uyumlu CRC16-CCITT hesaplama fonksiyonu (nimbleota.py ile aynı algoritma)
-function crc16ccitt(buffer) {
-    let crc = 0;
-    let arr = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
-    for (let i = 0; i < arr.length; i++) {
-        crc ^= arr[i] << 8;
+// 4. NimBLEOta ile uyumlu CRC16-CCITT hesaplama fonksiyonu (BLEOTA ile birebir aynı)
+function crc16ccitt(init, data, len) {
+    let crc = init;
+    for (let i = 0; i < len; i++) {
+        crc ^= data[i] << 8;
         for (let j = 0; j < 8; j++) {
             if (crc & 0x8000) {
-                crc = (crc << 1) ^ 0x1021;
+                crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
             } else {
-                crc = crc << 1;
+                crc = (crc << 1) & 0xFFFF;
             }
-            crc &= 0xFFFF;
         }
     }
     return crc & 0xFFFF;
