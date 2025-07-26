@@ -1535,11 +1535,16 @@ async function startFirmwareUpload() {
             fwQueue.push(data);
         });
 
-        // Notification'ları başlat
+        // ÖNCE notification'ları başlat (Python ile aynı sıra)
+        addFirmwareLog('Command notification başlatılıyor...', 'info');
         await commandChar.startNotifications();
+        addFirmwareLog('Command notification başlatıldı.', 'info');
+        
+        addFirmwareLog('Firmware notification başlatılıyor...', 'info');
         await firmwareChar.startNotifications();
+        addFirmwareLog('Firmware notification başlatıldı.', 'info');
 
-        // START komutu gönder ve ACK bekle (Python ile aynı mantık)
+        // SONRA START komutu gönder ve ACK bekle (Python ile aynı mantık)
         await sendOtaCommandNimbleOta('START', commandChar, file.size);
         
         let startAck;
