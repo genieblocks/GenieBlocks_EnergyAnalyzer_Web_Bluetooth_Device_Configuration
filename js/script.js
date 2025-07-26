@@ -1614,7 +1614,8 @@ async function startFirmwareUpload() {
                 // 3-byte header ekle: [sector_index_high, sector_index_low, chunk_sequence]
                 const header = new Uint8Array(3);
                 // Python'da: sec_idx if len(sector) == 4098 else 0xFFFF
-                const sectorIndex = (sectorArray.length === 4098) ? secIdx : 0xFFFF;
+                // Son sektör için 0xFFFF, diğerleri için secIdx kullan
+                const sectorIndex = (secIdx === sectors.length - 1) ? 0xFFFF : secIdx;
                 header[0] = (sectorIndex >> 8) & 0xFF;
                 header[1] = sectorIndex & 0xFF;
                 header[2] = (chunkIdx === numChunks - 1) ? 0xFF : chunkIdx; // 0xFF = son chunk
