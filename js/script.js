@@ -1611,6 +1611,8 @@ async function startFirmwareUpload() {
                 const end = Math.min(start + MAX_CHUNK_SIZE, sectorArray.length);
                 const chunk = sectorArray.slice(start, end);
                 
+                // Son sektör için 0xFFFF, diğerleri için secIdx kullan
+                const sectorIndex = (secIdx === sectors.length - 1) ? 0xFFFF : secIdx;
                 // 3-byte header ekle: [sector_index_low, sector_index_high, chunk_sequence] (little-endian)
                 const header = new Uint8Array(3);
                 header[0] = sectorIndex & 0xFF; // low byte
